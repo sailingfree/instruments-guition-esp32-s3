@@ -417,7 +417,8 @@ void metersWork(void) {
 }
 
 // Set the value of a meter using a double
-void setMeter(int scr, int idx, double value, const char *units) {
+void setMeter(ScreenTypes scr, int idx, double value, const char *units) {
+    screens.setMeter(scr, idx, value, units);
 //    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
 //        String v(value, 2);
   //      v += units;
@@ -425,33 +426,33 @@ void setMeter(int scr, int idx, double value, const char *units) {
    // }
 }
 
-void setGauge(int scr, double value) {
+void setGauge(ScreenTypes scr, double value) {
 //    if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
   //      lv_scale_set_line_needle_value(gauges[scr], needles[scr], TFT_WIDTH, (int32_t)value);
    // }
 }
 
 // Set the value of a meter using a string
-void setMeter(int scr, int idx, String &string) {
+void setMeter(ScreenTypes scr, int idx, String &string) {
 //    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
   //      ind[scr][idx]->setValue(string.c_str());
   //  }
 }
 
 // set using a char *
-void setMeter(int scr, int idx, char * str) {
+void setMeter(ScreenTypes scr, int idx, char * str) {
 //    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
 //        ind[scr][idx]->setValue(str);
 //    }
 }
 
-void setVlabel(int scr, String &str) {
+void setVlabel(ScreenTypes scr, String &str) {
 //    if (scr >= 0 && scr < SCR_MAX && vals[scr]) {
 //        lv_label_set_text(vals[scr], str.c_str());
 //    }
 }
 
-void setilabel(int scr, String &str) {
+void setilabel(ScreenTypes scr, String &str) {
 //    if (scr >= 0 && scr < SCR_MAX && infos[scr]) {
 //        lv_label_set_text(infos[scr], str.c_str());
 //    }
@@ -467,6 +468,7 @@ void loadScreen() {
 //    if(screen[iiscrnum]) {
 //        lv_scr_load(screen[iiscrnum]);
 //    }
+    screens.showScreen(SCR_ENGINE);
 }
 
 // set a value in the GNSSChart

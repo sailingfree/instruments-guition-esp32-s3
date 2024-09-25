@@ -94,9 +94,10 @@ class InfoBar {
 // Class to represent a screen of information
 class Screen {
     public:
-    // Static data items for the screens and their data items
+        lv_obj_t *screen;       // Parent of all objects in this screen
+
+        // data items for the screens and their data items
         Indicator *ind[12];
-        lv_obj_t *screen;
         lv_obj_t *gauge;
         lv_obj_t *needle;
         lv_obj_t *vals;
@@ -110,6 +111,7 @@ class Screen {
     bool isActive() {return (active);}
     void setActive(bool v) {active = v;}
     void setupCommonStyles(lv_obj_t * obj);
+    void setValue(uint16_t idx, double value, const char * units);
 
 //    protected:
     virtual void draw();
@@ -120,7 +122,8 @@ class Screen {
 
 
 class EngineScreen : public Screen {
-
+    public:
+    void draw();
 };
 
 class NavScreen : public Screen {
@@ -153,9 +156,11 @@ class Screens {
     Screen * screens[SCR_MAX];
 
     void init();
+    void setMeter(ScreenTypes scr, uint16_t idx, double value, const char * units);
     void showScreen(ScreenTypes scr);
     void hideScreen(ScreenTypes scr);
 };
+
 
 // Fonts
 extern lv_font_t RobotoCondensedVariableFont_wght16;
@@ -169,11 +174,11 @@ extern lv_font_t Anton64;
 // void metersTask(void* param);
 void metersSetup();
 void metersWork();
-void setMeter(int scr, int ind, double, const char *);
-void setMeter(int scr, int ind, char *);
-void setGauge(int scr, double);
-void setVlabel(int, String &);
-void setilabel(int scr, String &);
+void setMeter(ScreenTypes scr, int ind, double, const char *);
+void setMeter(ScreenTypes scr, int ind, char *);
+void setGauge(ScreenTypes scr, double);
+void setVlabel(ScreenTypes, String &);
+void setilabel(ScreenTypes scr, String &);
 void loadScreen();
 void displayText(const char *);
 
