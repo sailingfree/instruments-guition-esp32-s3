@@ -1,0 +1,41 @@
+4840s040PS C:\Users\peter\Nextcloud\PlatformIO\Projects\ESp32_bluetooth_receiver> python C:\Users\peter\.platformio\packages\tool-esptoolpy\esptool.py --port COM5 flash_id
+esptool.py v4.5.1
+Serial port COM5
+Connecting...
+Detecting chip type... ESP32-S3
+Chip is ESP32-S3 (revision v0.2)
+Features: WiFi, BLE
+Crystal is 40MHz
+MAC: 80:65:99:c8:92:9c
+Uploading stub...
+Running stub...
+Stub running...
+Manufacturer: 85
+Device: 2018
+Detected flash size: 16MB
+Flash type set in eFuse: quad (4 data lines)
+Hard resetting via RTS pin...
+
+
+---------------------------
+Read original image:
+python C:\Users\peter\.platformio\packages\tool-esptoolpy\esptool.py --port COM5 -b 921600 read_flash 0x000000 0x1000000 original_16M_flash.bin
+
+---------------------------
+
+Re-flash the image:
+python C:\Users\peter\.platformio\packages\tool-esptoolpy\esptool.py --port COM5 -b 921600 write_flash 0x000000 original_16M_flash.bin
+
+------------------------------
+Links
+https://michiel.vanderwulp.be/domotica/Modules/SmartDisplay-ESP32-S3-4.0inch/
+
+
+https://community.home-assistant.io/t/guition-4-480x480-esp32-s3-4848s040-smart-display-with-lvgl/729271
+
+Get the code from here and copy as a Projects
+https://github.com/rzeldent/esp32-smartdisplay
+
+----------------------------------------
+This is the main source of info
+https://github.com/rzeldent/esp32-smartdisplay?tab=readme-ov-file

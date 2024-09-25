@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "new": "cpp",
+        "esp_lcd_touch.h": "c"
+    }
+}
