@@ -111,8 +111,8 @@ bool connectWifi() {
                 WifiIP = WiFi.localIP().toString();
                 Console->printf("Connected to %s\n", wifiCreds[i].ssid.c_str());
                 hadconnection = true;
-                setilabel(SCR_ENGINE, WifiIP);
-                setilabel(SCR_NAV, WifiIP);
+ //               setilabel(SCR_ENGINE, WifiIP);
+ //               setilabel(SCR_NAV, WifiIP);
                 String msg("AP: ");
                 msg += wifiCreds[i].ssid;
                 msg += "\nIP: ";

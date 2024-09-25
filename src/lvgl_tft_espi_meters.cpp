@@ -33,84 +33,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <N2kMessages.h>
 
 #include <esp32_smartdisplay.h>
-//#include <ui/ui.h>
 
-// Forward declarations
-static lv_obj_t *createEngineScreen(int screen);
-static lv_obj_t *createNavScreen(int screen);
-static lv_obj_t *createGNSSScreen(int screen);
-static lv_obj_t *createEnvScreen(int screen);
-static lv_obj_t *createInfoScreen(int screen);
+// The screens object
+Screens screens;
 
-// Fonts
-extern lv_font_t RobotoCondensedVariableFont_wght16;
-extern lv_font_t RobotoCondensedVariableFont_wght24;
-extern lv_font_t RobotoCondensedVariableFont_wght32;
-extern lv_font_t RobotoCondensedVariableFont_wght42;
-extern lv_font_t RobotoCondensedVariableFont_wght52;
-extern lv_font_t RobotoCondensedVariableFont_wght64;
-extern lv_font_t Anton64;
-
-void lv_example_scale_6(lv_obj_t * parent);
-#if 0
-/*
- * Read the input rotary encoder
- * Read the value and the button state
- */
-bool read_encoder(lv_indev_drv_t *indev, lv_indev_data_t *data) {
-    static int32_t last_val = 0;
-
-    int32_t rval = rotaryEncoder.readEncoder();
-    data->enc_diff = rval - last_val;
-    last_val = rval;
-    data->state = rotaryEncoder.isEncoderButtonDown() ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL; /* Dummy - no press */
-
-    if (data->enc_diff > 0) {
-        data->key = LV_KEY_UP;
-    } else if (data->enc_diff < 0) {
-        data->key = LV_KEY_DOWN;
-    }
-    return false;  // Never any more data epected from this device
-}
-
-#endif
-
-// Static data items for the screens and their data items
-static Indicator *ind[SCR_MAX][12];
-static lv_obj_t *screen[SCR_MAX];
-static lv_obj_t *gauges[SCR_MAX];
-static lv_obj_t *needles[SCR_MAX];
-static lv_obj_t *vals[SCR_MAX];
-static lv_obj_t *infos[SCR_MAX];
-static InfoBar  *bars[SCR_MAX][2];
-
-// define text areas
-static lv_obj_t *textAreas[SCR_MAX];
-
-// GNSS Signal strength
-static lv_chart_series_t *GNSSChartSeries;
-static lv_obj_t *GNSSChart;
-
-// GNSSS sky view
-static lv_obj_t *skyView;
-
-// Static local cache of satellite data
-#define MAXSATS 9
-
-struct SatData {
-    lv_obj_t *dot;
-};
-
-static SatData satData[MAXSATS];
-
-// Print some text to the boot info screen textarea
-void displayText(const char *str) {
-    if (textAreas[SCR_BOOT]) {
-        lv_textarea_add_text(textAreas[SCR_BOOT], str);
-        lv_textarea_cursor_down(textAreas[SCR_BOOT]);
-        metersWork();       // Refresh the screens with new info
-    }
-}
 
 
 static int iiscrnum = 0;  // Screen number selected
@@ -122,26 +48,14 @@ static void my_event_cb(lv_event_t * e) {
 
     if (etype == LV_EVENT_RELEASED) {
          // Key up swap screens.
-         int old = iiscrnum;
-        iiscrnum = (iiscrnum + 1) % SCR_MAX;
-        Serial.printf("Moving from %d to %d\n", old, iiscrnum);
-        if (iiscrnum == SCR_BOOT) {
-            // Ignore the boot messages screen during normal operation
-            iiscrnum++;
-        }
-        if(screen[iiscrnum]) {
-        lv_scr_load(screen[iiscrnum]);
-        StringStream s;
-        getSysInfo(s);
-        lv_textarea_set_text(textAreas[SCR_SYSINFO], s.data.c_str());
-        s.clear();
-        getN2kMsgs(s);
-        lv_textarea_set_text(textAreas[SCR_MSGS], s.data.c_str());
-        s.clear();
-        getNetInfo(s);
-        lv_textarea_set_text(textAreas[SCR_NETWORK], s.data.c_str());
-        }
-
+//         int old = iiscrnum;
+//        iiscrnum = (iiscrnum + 1) % SCR_MAX;
+//        Serial.printf("Moving from %d to %d\n", old, iiscrnum);
+//        if (iiscrnum == SCR_BOOT) {
+//            // Ignore the boot messages screen during normal operation
+//            iiscrnum++;
+//       }
+ 
         String val(iiscrnum);
         GwSetVal(GWSCREEN, val);
     }
@@ -233,30 +147,20 @@ void metersSetup() {
         lv_disp_set_theme(dispp, theme);
     }
 
-// Create the boot screen for bootup messages
-    screen[SCR_BOOT] = createInfoScreen(SCR_BOOT);
-    //Create the rest of the screens. These get loaded later
-    screen[SCR_ENGINE] = createEngineScreen(SCR_ENGINE);
-    screen[SCR_NAV] = createNavScreen(SCR_NAV);
-    screen[SCR_GNSS] = createGNSSScreen(SCR_GNSS);
-    screen[SCR_ENV] = createEnvScreen(SCR_ENV);
-    screen[SCR_NETWORK] = createInfoScreen(SCR_NETWORK);
-    screen[SCR_SYSINFO] = createInfoScreen(SCR_SYSINFO);
-    screen[SCR_MSGS] = createInfoScreen(SCR_MSGS);
+    // Init the screens
+    screens.init();
 
-    // Load the boot screen
-    lv_obj_t * startScreen = screen[SCR_BOOT];
-    lv_disp_load_scr(startScreen);    
+    // Make the boot screen active for boot up
+    screens.showScreen(SCR_BOOT);
+}
 
-    // display some progress
-    displayText("Initialising screens...");
-    }
-
+#if 0
 // create a container for a gauge or other display object
 // setting styles etc
 static lv_obj_t *createContainer(lv_obj_t *cont) {
     lv_obj_t *container = lv_obj_create(cont);
     return container;
+
 }
 
 static void setupCommonstyles(lv_obj_t * obj) {
@@ -503,7 +407,7 @@ static lv_obj_t *createInfoScreen(int scr) {
 
     return screen;
 }
-
+#endif
 // Update the meters. Called regularly from the main loop/task
 void metersWork(void) {
     static const uint32_t tick_delay = 50;
@@ -514,73 +418,73 @@ void metersWork(void) {
 
 // Set the value of a meter using a double
 void setMeter(int scr, int idx, double value, const char *units) {
-    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
-        String v(value, 2);
-        v += units;
-        ind[scr][idx]->setValue(v.c_str());
-    }
+//    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
+//        String v(value, 2);
+  //      v += units;
+    //    ind[scr][idx]->setValue(v.c_str());
+   // }
 }
 
 void setGauge(int scr, double value) {
-    if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
-        lv_scale_set_line_needle_value(gauges[scr], needles[scr], TFT_WIDTH, (int32_t)value);
-    }
+//    if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
+  //      lv_scale_set_line_needle_value(gauges[scr], needles[scr], TFT_WIDTH, (int32_t)value);
+   // }
 }
 
 // Set the value of a meter using a string
 void setMeter(int scr, int idx, String &string) {
-    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
-        ind[scr][idx]->setValue(string.c_str());
-    }
+//    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
+  //      ind[scr][idx]->setValue(string.c_str());
+  //  }
 }
 
 // set using a char *
 void setMeter(int scr, int idx, char * str) {
-    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
-        ind[scr][idx]->setValue(str);
-    }
+//    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
+//        ind[scr][idx]->setValue(str);
+//    }
 }
 
 void setVlabel(int scr, String &str) {
-    if (scr >= 0 && scr < SCR_MAX && vals[scr]) {
-        lv_label_set_text(vals[scr], str.c_str());
-    }
+//    if (scr >= 0 && scr < SCR_MAX && vals[scr]) {
+//        lv_label_set_text(vals[scr], str.c_str());
+//    }
 }
 
 void setilabel(int scr, String &str) {
-    if (scr >= 0 && scr < SCR_MAX && infos[scr]) {
-        lv_label_set_text(infos[scr], str.c_str());
-    }
+//    if (scr >= 0 && scr < SCR_MAX && infos[scr]) {
+//        lv_label_set_text(infos[scr], str.c_str());
+//    }
 }
 
 // Load the first screen
 void loadScreen() {
-    // Get the last screen number if set and use that
-    String scrnum = GwGetVal(GWSCREEN);
-    if (scrnum != "---") {
-        iiscrnum = scrnum.toInt() % SCR_MAX;
-    }
-    if(screen[iiscrnum]) {
-        lv_scr_load(screen[iiscrnum]);
-    }
+//    // Get the last screen number if set and use that
+//    String scrnum = GwGetVal(GWSCREEN);
+//    if (scrnum != "---") {
+//        iiscrnum = scrnum.toInt() % SCR_MAX;
+//    }
+//    if(screen[iiscrnum]) {
+//        lv_scr_load(screen[iiscrnum]);
+//    }
 }
 
 // set a value in the GNSSChart
 void setGNSSSignal(uint32_t idx, uint32_t val) {
-    if (idx < 0 || idx > MAXSATS)
-        return;  // Ignore bad index
+//    if (idx < 0 || idx > MAXSATS)
+//        return;  // Ignore bad index
 
 //    GNSSChartSeries->points[idx] = val;
-    lv_chart_refresh(GNSSChart);
+//    lv_chart_refresh(GNSSChart);
 }
 
 // set one of the indicators in the sjky view
 void setGNSSSky(uint32_t idx, double azimuth, double declination) {
-    if (idx < 0 || idx > MAXSATS)
-        return;  // Ignore bad index
-    if (azimuth < 0 || azimuth > 360 || declination < 0 || declination > 90) {
-        return;  // Ignore inplausible values
-    }
+//    if (idx < 0 || idx > MAXSATS)
+//        return;  // Ignore bad index
+//    if (azimuth < 0 || azimuth > 360 || declination < 0 || declination > 90) {
+//        return;  // Ignore inplausible values
+//    }
 /*
     // Green dot for the sky view
     if (!satData[idx].dot) {
@@ -608,23 +512,29 @@ void setGNSSSky(uint32_t idx, double azimuth, double declination) {
 
 // Initialise the sky view for the nunber of satellites. Removes any old ones not needed
 void initGNSSSky(uint32_t svs) {
-    for (int i = svs; i < MAXSATS; i++) {
-        if (satData[i].dot) {
-            lv_obj_del(satData[i].dot);
-            satData[i].dot = NULL;
-        }
-    }
+//    for (int i = svs; i < MAXSATS; i++) {
+//        if (satData[i].dot) {
+//            lv_obj_del(satData[i].dot);
+//            satData[i].dot = NULL;
+//        }
+//    }
 }
 
 // Init the signal display to the number of SVs
 void initGNSSSignal(uint32_t svs) {
-    for (int i = svs; i < MAXSATS; i++) {
+//    for (int i = svs; i < MAXSATS; i++) {
 //        if (GNSSChartSeries->points[i]) {
 //            GNSSChartSeries->points[i] = 0;
  //           lv_chart_refresh(GNSSChart);
 //        }
-    }
+//    }
 }
+
+// display some text on the boot screen
+void displayText(const char * str){
+    screens.screens[SCR_BOOT]->displayText(str);
+}
+
 
 #else
 // Stubs for now
@@ -638,7 +548,7 @@ void setGauge(int scr, double){}
 void setVlabel(int, String &){}
 void setilabel(int scr, String &){}
 void loadScreen(){}
-void displayText(const char *){}
+
 void initGNSSSky(uint32_t svs) {}
 
 // Init the signal display to the number of SVs
