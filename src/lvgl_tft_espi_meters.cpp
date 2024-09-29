@@ -575,7 +575,6 @@ void setMeter(Screens scr, MeterIdx idx, double value, const char* units, uint32
 void setGauge(Screens scr, double value) {
     if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
         lv_scale_set_line_needle_value(gauges[scr], needles[scr], TFT_WIDTH, (int32_t)value);
-        Serial.printf("Setting scr %d gauge to %f (%d)\n", scr, value, (int32_t)value);
     }
 }
 
