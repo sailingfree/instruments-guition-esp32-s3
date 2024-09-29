@@ -92,7 +92,6 @@ void handlePGN(tN2kMsg& msg) {
                     case 0:
                         setMeter(SCR_ENGINE, HOUSEV, voltage, "V");
                         setMeter(SCR_ENGINE, HOUSEI, current, "A");
-                        Serial.printf("EV %f EI %f\n", voltage, current);
                         record["instance"]  = instance;
                         record["housev"] = voltage;
                         record["housei"] = current;
@@ -236,14 +235,6 @@ void handlePGN(tN2kMsg& msg) {
                 // now += 26 * SECONDS_IN_DAY;
                 struct tm tm;
                 gmtime_r(&now, &tm);
-                /*
-                Serial.printf("XX %d %d %f %ld %d-%d-%d %d:%d:%d\n",
-                              DaysSince1970,
-                              SecondsSinceMidnight,
-                              now,
-                              tm.tm_hour, tm.tm_min, tm.tm_sec,
-                              tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
-                */
                 // Update the system time
                 rtc.setTime(tm.tm_sec, tm.tm_min, tm.tm_hour, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
             }
