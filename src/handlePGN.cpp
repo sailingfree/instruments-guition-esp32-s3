@@ -55,7 +55,7 @@ void updateTime() {
     if(now > last) {
         last = now;
         snprintf(buf, 9, "%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
-        setMeter(SCR_GNSS, TIME, buf);
+        setMeter(SCR_GNSS, UTC, buf);
     }
 }
 
@@ -217,7 +217,11 @@ void handlePGN(tN2kMsg& msg) {
                 char buf[10];
                 snprintf(buf, 12, "%02d:%02d:%02d", hours, minutes, seconds);
 
+                String latStr(Latitude,5);
+                String lonStr(Longitude,5);
                 setMeter(SCR_GNSS, HDOP, Hdop, "");
+                setMeter(SCR_GNSS, LAT, Latitude,"", 6);
+                setMeter(SCR_GNSS, LONG, Longitude, "", 6);
 
                 record["lat"] = Latitude;
                 record["lon"] = Longitude;
@@ -252,32 +256,7 @@ void handlePGN(tN2kMsg& msg) {
 
         case 129540: {
             // GNSS satellites in view
-
-            unsigned char instance;
-            tN2kRangeResidualMode Mode;
-            uint8_t NumberOfSVs;
-
-            // First get the number of satellites in view
-            bool s = ParseN2kPGN129540(msg, instance, Mode, NumberOfSVs);
-
-            initGNSSSky(NumberOfSVs);
-            initGNSSSignal(NumberOfSVs);
-            // Now for each satellite index get the details
-            for (int i = 0; i < NumberOfSVs; i++) {
-                tSatelliteInfo SatelliteInfo;
-
-                s = ParseN2kPGN129540(msg, i, SatelliteInfo);
-/*                Console->printf("RET %d Sat %d PRN %d AZ %f EL %f SNR %f\n", s, i, SatelliteInfo.PRN,
-                                RadToDeg(SatelliteInfo.Azimuth), RadToDeg(SatelliteInfo.Elevation),
-                                SatelliteInfo.SNR);
-*/                                
-                setGNSSSignal(i, SatelliteInfo.SNR);
-                setGNSSSky(i, RadToDeg(SatelliteInfo.Azimuth), RadToDeg(SatelliteInfo.Elevation));
-                
-            }
-
-            setMeter(SCR_GNSS, SATS, (double)NumberOfSVs, "");
-
+            // No longer handled as the Horizon does not provide this
         } break;
 
         case 130310: {

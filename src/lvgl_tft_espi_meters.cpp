@@ -21,13 +21,11 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if 1
 
 #include <GwPrefs.h>
 #include <StringStream.h>
 #include <SysInfo.h>
 #include <lvgl.h>
-//#include <rotary_encoder.h>
 #include <tftscreen.h>
 #include <NMEA2000.h>
 #include <N2kMessages.h>
@@ -36,11 +34,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //#include <ui/ui.h>
 
 // Forward declarations
-static lv_obj_t *createEngineScreen(int screen);
-static lv_obj_t *createNavScreen(int screen);
-static lv_obj_t *createGNSSScreen(int screen);
-static lv_obj_t *createEnvScreen(int screen);
-static lv_obj_t *createInfoScreen(int screen);
+static lv_obj_t* createEngineScreen(int screen);
+static lv_obj_t* createNavScreen(int screen);
+static lv_obj_t* createGNSSScreen(int screen);
+static lv_obj_t* createEnvScreen(int screen);
+static lv_obj_t* createInfoScreen(int screen);
 
 // Fonts
 extern lv_font_t RobotoCondensedVariableFont_wght16;
@@ -51,60 +49,20 @@ extern lv_font_t RobotoCondensedVariableFont_wght52;
 extern lv_font_t RobotoCondensedVariableFont_wght64;
 extern lv_font_t Anton64;
 
-void lv_example_scale_6(lv_obj_t * parent);
-#if 0
-/*
- * Read the input rotary encoder
- * Read the value and the button state
- */
-bool read_encoder(lv_indev_drv_t *indev, lv_indev_data_t *data) {
-    static int32_t last_val = 0;
-
-    int32_t rval = rotaryEncoder.readEncoder();
-    data->enc_diff = rval - last_val;
-    last_val = rval;
-    data->state = rotaryEncoder.isEncoderButtonDown() ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL; /* Dummy - no press */
-
-    if (data->enc_diff > 0) {
-        data->key = LV_KEY_UP;
-    } else if (data->enc_diff < 0) {
-        data->key = LV_KEY_DOWN;
-    }
-    return false;  // Never any more data epected from this device
-}
-
-#endif
-
 // Static data items for the screens and their data items
-static Indicator *ind[SCR_MAX][12];
-static lv_obj_t *screen[SCR_MAX];
-static lv_obj_t *gauges[SCR_MAX];
-static lv_obj_t *needles[SCR_MAX];
-static lv_obj_t *vals[SCR_MAX];
-static lv_obj_t *infos[SCR_MAX];
-static InfoBar  *bars[SCR_MAX][2];
+static Indicator* ind[SCR_MAX][12];
+static lv_obj_t* screen[SCR_MAX];
+static lv_obj_t* gauges[SCR_MAX];
+static lv_obj_t* needles[SCR_MAX];
+static lv_obj_t* vals[SCR_MAX];
+static lv_obj_t* infos[SCR_MAX];
+//static InfoBar  *bars[SCR_MAX][2];
 
 // define text areas
-static lv_obj_t *textAreas[SCR_MAX];
-
-// GNSS Signal strength
-static lv_chart_series_t *GNSSChartSeries;
-static lv_obj_t *GNSSChart;
-
-// GNSSS sky view
-static lv_obj_t *skyView;
-
-// Static local cache of satellite data
-#define MAXSATS 9
-
-struct SatData {
-    lv_obj_t *dot;
-};
-
-static SatData satData[MAXSATS];
+static lv_obj_t* textAreas[SCR_MAX];
 
 // Print some text to the boot info screen textarea
-void displayText(const char *str) {
+void displayText(const char* str) {
     if (textAreas[SCR_BOOT]) {
         lv_textarea_add_text(textAreas[SCR_BOOT], str);
         lv_textarea_cursor_down(textAreas[SCR_BOOT]);
@@ -113,57 +71,37 @@ void displayText(const char *str) {
 }
 
 
-static int iiscrnum = 0;  // Screen number selected
 static const uint32_t border = 2, padding = 2;
 
-// Handle the touch event.
-static void my_event_cb(lv_event_t * e) {
-    lv_event_code_t etype = lv_event_get_code(e);
-
-    if (etype == LV_EVENT_RELEASED) {
-         // Key up swap screens.
-         int old = iiscrnum;
-        iiscrnum = (iiscrnum + 1) % SCR_MAX;
-        Serial.printf("Moving from %d to %d\n", old, iiscrnum);
-        if (iiscrnum == SCR_BOOT) {
-            // Ignore the boot messages screen during normal operation
-            iiscrnum++;
-        }
-        if(screen[iiscrnum]) {
-        lv_scr_load(screen[iiscrnum]);
-        StringStream s;
-        getSysInfo(s);
-        lv_textarea_set_text(textAreas[SCR_SYSINFO], s.data.c_str());
-        s.clear();
-        getN2kMsgs(s);
-        lv_textarea_set_text(textAreas[SCR_MSGS], s.data.c_str());
-        s.clear();
-        getNetInfo(s);
-        lv_textarea_set_text(textAreas[SCR_NETWORK], s.data.c_str());
-        }
-
-        String val(iiscrnum);
-        GwSetVal(GWSCREEN, val);
-    }
+static void refreshData() {
+    StringStream s;
+    getSysInfo(s);
+    lv_textarea_set_text(textAreas[SCR_SYSINFO], s.data.c_str());
+    s.clear();
+    getN2kMsgs(s);
+    lv_textarea_set_text(textAreas[SCR_MSGS], s.data.c_str());
+    s.clear();
+    getNetInfo(s);
+    lv_textarea_set_text(textAreas[SCR_NETWORK], s.data.c_str());
 }
 
-static lv_style_t style;
-
 // Constructor. Binds to the parent object.
-Indicator::Indicator(lv_obj_t *parent, const char *name, uint32_t x, uint32_t y) {
+Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y) {
     static lv_style_t text_style;
     static lv_style_t value_style;
+    static lv_style_t style;
 
     container = lv_obj_create(parent);
     lv_obj_set_width(container, (TFT_WIDTH / 2) - 2 * padding);
     lv_obj_set_height(container, (TFT_HEIGHT / 4) - 2 * padding);
- 
+
     lv_style_init(&style);
     lv_style_set_border_width(&style, border);
     lv_obj_add_style(container, &style, 0);
 
     lv_obj_set_layout(container, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
+    lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
 
     label = lv_label_create(container);
     lv_label_set_text(label, name);
@@ -171,29 +109,37 @@ Indicator::Indicator(lv_obj_t *parent, const char *name, uint32_t x, uint32_t y)
 
 
     lv_style_init(&text_style);
-    lv_style_set_text_font(&text_style, & RobotoCondensedVariableFont_wght32);
-    lv_obj_add_style(label, & text_style, 0);
- 
+    lv_style_set_text_font(&text_style, &RobotoCondensedVariableFont_wght32);
+    lv_obj_add_style(label, &text_style, 0);
+
     text = lv_label_create(container);
     lv_style_init(&value_style);
-    lv_style_set_text_font(&value_style, & RobotoCondensedVariableFont_wght64);
+    lv_style_set_text_font(&value_style, &RobotoCondensedVariableFont_wght64);
     lv_obj_add_style(text, &value_style, 0);
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, 0);
 
     lv_label_set_text(text, "---");
-    lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
+    //   lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
 }
 
 // Constructor. Binds to the parent object.
-InfoBar::InfoBar(lv_obj_t *parent, uint32_t x, uint32_t y) {
+InfoBar::InfoBar(lv_obj_t* parent) {
+    static lv_style_t style;
     static lv_style_t value_style;
 
     container = lv_obj_create(parent);
-    lv_obj_set_width(container, (TFT_WIDTH) - 2 * padding);
+    lv_obj_set_width(container, (TFT_WIDTH)-2 * padding);
     lv_obj_set_height(container, (TFT_HEIGHT / 8) - 2 * padding);
- 
+    lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
+
     lv_style_init(&style);
     lv_style_set_border_width(&style, border);
+
+    lv_style_set_radius(&style, 3);
+
+    lv_style_set_bg_opa(&style, LV_OPA_100);
+    lv_style_set_bg_color(&style, lv_palette_main(LV_PALETTE_BLUE));
+
     lv_obj_add_style(container, &style, 0);
 
     lv_obj_set_layout(container, LV_LAYOUT_FLEX);
@@ -201,40 +147,118 @@ InfoBar::InfoBar(lv_obj_t *parent, uint32_t x, uint32_t y) {
 
     text = lv_label_create(container);
     lv_style_init(&value_style);
-    lv_style_set_text_font(&value_style, & RobotoCondensedVariableFont_wght24);
+    lv_style_set_bg_opa(&value_style, LV_OPA_100);
+    lv_style_set_bg_color(&value_style, lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_text_color(&value_style, lv_color_white());
+    lv_style_set_pad_all(&value_style, 10);
+    lv_style_set_text_font(&value_style, &RobotoCondensedVariableFont_wght42);
     lv_obj_add_style(text, &value_style, 0);
+    lv_obj_set_align(text, LV_ALIGN_CENTER);
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, 0);
 
-    lv_label_set_text(text, "test test test test test test");
-    lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
+    //    lv_label_set_text(text, "test test test test test test");
+    //    lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
 }
 
-
-void Indicator::setValue(const char *value) {
+void InfoBar::setValue(const char* value) {
     lv_label_set_text(text, value);
 }
 
+
+
+MenuBar::MenuBar(lv_obj_t* parent) {
+    // Constructor. Binds to the parent object.
+    static lv_style_t style;
+
+    container = lv_obj_create(parent);
+    lv_obj_set_width(container, (TFT_WIDTH)-2 * padding);
+    lv_obj_set_height(container, (TFT_HEIGHT / 8) - 2 * padding);
+    lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_style_init(&style);
+    lv_style_set_border_width(&style, border);
+    lv_obj_add_style(container, &style, 0);
+
+    lv_obj_set_layout(container, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(container, LV_FLEX_FLOW_ROW);
+}
+
+static void buttonHandler(lv_event_t* e) {
+
+    void* target = lv_event_get_user_data(e);
+    Screens s = reinterpret_cast <Screens&> (target);
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        Serial.printf("Target is %d\n", s);
+        if (s >= 0 && s < SCR_MAX && screen[s]) {
+            refreshData();
+            lv_scr_load(screen[s]);
+        }
+    }
+}
+
+// Add a button to a menu bar. The callbackl will change the screen to the target
+void MenuBar::addButton(const char* label, Screens target) {
+    lv_obj_t* b = lv_button_create(container);
+    lv_obj_t* l = lv_label_create(b);
+    lv_label_set_text(l, label);
+    lv_obj_set_flex_grow(b, 1);
+    /*Init the style for the default state*/
+    static lv_style_t style;
+    lv_style_init(&style);
+
+    lv_style_set_radius(&style, 3);
+
+    lv_style_set_bg_opa(&style, LV_OPA_100);
+    lv_style_set_bg_color(&style, lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_bg_grad_color(&style, lv_palette_darken(LV_PALETTE_BLUE, 2));
+    lv_style_set_bg_grad_dir(&style, LV_GRAD_DIR_VER);
+
+    lv_style_set_border_opa(&style, LV_OPA_40);
+    lv_style_set_border_width(&style, 2);
+    lv_style_set_border_color(&style, lv_palette_main(LV_PALETTE_GREY));
+
+    lv_style_set_shadow_width(&style, 8);
+    lv_style_set_shadow_color(&style, lv_palette_main(LV_PALETTE_GREY));
+    lv_style_set_shadow_offset_y(&style, 8);
+
+    lv_style_set_outline_opa(&style, LV_OPA_COVER);
+    lv_style_set_outline_color(&style, lv_palette_main(LV_PALETTE_BLUE));
+
+    lv_style_set_text_color(&style, lv_color_white());
+    lv_style_set_pad_all(&style, 10);
+    //    lv_obj_remove_style_all(b);
+    lv_obj_add_style(b, &style, 0);
+    lv_obj_add_event_cb(b, buttonHandler, LV_EVENT_ALL, (void*)target);
+}
+
+void Indicator::setValue(const char* value) {
+    lv_label_set_text(text, value);
+}
+
+// Initialise the graphics
 void metersSetup() {
 
     smartdisplay_init();
     smartdisplay_lcd_set_backlight(1.0f);
 
-    lv_theme_t * theme = NULL;   
+    lv_theme_t* theme = NULL;
 
-    lv_disp_t * dispp = lv_disp_get_default();
+    lv_disp_t* dispp = lv_disp_get_default();
     theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED),
-                                        false, &RobotoCondensedVariableFont_wght24);
+        false, &RobotoCondensedVariableFont_wght24);
 
     //theme = lv_theme_mono_init(dispp, false, &lv_font_montserrat_24);
     theme = lv_theme_mono_init(dispp, false, &RobotoCondensedVariableFont_wght32);
-                                  
-    if(theme) {
+
+    if (theme) {
         lv_disp_set_theme(dispp, theme);
     }
 
-// Create the boot screen for bootup messages
+    // Create the boot screen for bootup messages
     screen[SCR_BOOT] = createInfoScreen(SCR_BOOT);
-    //Create the rest of the screens. These get loaded later
+    //Create the rest of the screens.
     screen[SCR_ENGINE] = createEngineScreen(SCR_ENGINE);
     screen[SCR_NAV] = createNavScreen(SCR_NAV);
     screen[SCR_GNSS] = createGNSSScreen(SCR_GNSS);
@@ -244,39 +268,64 @@ void metersSetup() {
     screen[SCR_MSGS] = createInfoScreen(SCR_MSGS);
 
     // Load the boot screen
-    lv_obj_t * startScreen = screen[SCR_BOOT];
-    lv_disp_load_scr(startScreen);    
+    lv_obj_t* startScreen = screen[SCR_BOOT];
+    lv_disp_load_scr(startScreen);
 
     // display some progress
     displayText("Initialising screens...");
-    }
+}
 
 // create a container for a gauge or other display object
 // setting styles etc
-static lv_obj_t *createContainer(lv_obj_t *cont) {
-    lv_obj_t *container = lv_obj_create(cont);
+static lv_obj_t* createContainer(lv_obj_t* cont) {
+    lv_obj_t* container = lv_obj_create(cont);
     return container;
 }
 
-static void setupCommonstyles(lv_obj_t * obj) {
-//    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN);
+static void setupCommonstyles(lv_obj_t* obj) {
+    //    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN);
     lv_obj_set_style_pad_gap(obj, padding, 0);
 
     lv_obj_set_layout(obj, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_height(obj, TFT_HEIGHT);
     lv_obj_set_width(obj, TFT_WIDTH);
-    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE); 
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+}
+
+static void setupHeader(lv_obj_t* screen, const char* title) {
+    // Info bar at the tope
+    InfoBar* bar = new InfoBar(screen);
+    //    bars[scr][0] = bar;
+    bar->setValue(title);
 }
 
 
-static lv_obj_t *createEngineScreen(int scr) {
-    lv_obj_t *screen = lv_obj_create(NULL);
+static void setupMenu(lv_obj_t* screen) {
+    MenuBar* menuBar = new MenuBar(screen);
+    menuBar->addButton("Eng", SCR_ENGINE);
+    menuBar->addButton("Nav", SCR_NAV);
+    menuBar->addButton("GPS", SCR_GNSS);
+    menuBar->addButton("Env", SCR_ENV);
+    menuBar->addButton("Data", SCR_NETWORK);
+}
+
+
+static void setupDataMenu(lv_obj_t* screen) {
+    MenuBar* menuBar = new MenuBar(screen);
+    menuBar->addButton("Home", SCR_ENGINE);
+    menuBar->addButton("Net", SCR_NETWORK);
+    menuBar->addButton("Sys", SCR_SYSINFO);
+    menuBar->addButton("Msg", SCR_MSGS);
+}
+
+
+static lv_obj_t* createEngineScreen(int scr) {
+    lv_obj_t* screen = lv_obj_create(NULL);
 
     setupCommonstyles(screen);
 
-    // Info bar at the tope
-    bars[scr][0] = new InfoBar(screen, 0,0);
+    setupHeader(screen, "Engine");
 
     // Create the indicator panels
     ind[scr][HOUSEV] = new Indicator(screen, "House Voltage", 0, 0);
@@ -284,23 +333,23 @@ static lv_obj_t *createEngineScreen(int scr) {
     ind[scr][ENGINEV] = new Indicator(screen, "Engine Voltage", 0, 2 * TFT_WIDTH / 3);
 
     // Create a container for a gauge
-    lv_obj_t *container = createContainer(screen);
-    lv_obj_set_size(container, (TFT_WIDTH/2) - 2 * padding, (TFT_HEIGHT/2) - 2 * padding);
-//    lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
+    lv_obj_t* container = createContainer(screen);
+    lv_obj_set_size(container, (TFT_WIDTH / 2) - 2 * padding, (TFT_HEIGHT / 2) - 2 * padding);
+    //    lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
 
-    // Meter for the RPM
-    lv_obj_t * scale = lv_scale_create(container);
+        // Meter for the RPM
+    lv_obj_t* scale = lv_scale_create(container);
 
-    lv_obj_set_size(scale, (TFT_WIDTH /2) - (2 * padding) - (2 * border) , (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
+    lv_obj_set_size(scale, (TFT_WIDTH / 2) - (2 * padding) - (2 * border), (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
     lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
     lv_obj_set_style_bg_opa(scale, LV_OPA_60, 0);
     lv_obj_set_style_bg_color(scale, lv_color_black(), 0);
     lv_obj_set_style_radius(scale, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_clip_corner(scale, true, 0);
     lv_obj_center(scale);
-//    lv_obj_set_style_pad_gap(container, padding, 0);
+    //    lv_obj_set_style_pad_gap(container, padding, 0);
 
-        static lv_style_t indicator_style;
+    static lv_style_t indicator_style;
     lv_style_init(&indicator_style);
 
     /* Label style properties */
@@ -313,7 +362,7 @@ static lv_obj_t *createEngineScreen(int scr) {
     lv_style_set_line_width(&indicator_style, 2); /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
-    static const char * rpm_ticks[] = {"0", "500", "1000", "1500", "2000", "2500", "3000", "3500"};
+    static const char* rpm_ticks[] = { "0", "500", "1000", "1500", "2000", "2500", "3000", "3500" };
     lv_scale_set_text_src(scale, rpm_ticks);
     lv_scale_set_label_show(scale, true);
     lv_scale_set_total_tick_count(scale, 31);
@@ -332,9 +381,9 @@ static lv_obj_t *createEngineScreen(int scr) {
 
     lv_obj_add_style(scale, &scale_style, LV_PART_ANY);
 
-    lv_obj_t * needle = lv_image_create(scale);
+    lv_obj_t* needle = lv_image_create(scale);
     needle = lv_line_create(scale);
-        lv_obj_set_style_line_width(needle, 5, 0);
+    lv_obj_set_style_line_width(needle, 5, 0);
     lv_obj_set_style_line_rounded(needle, true, 0);
     lv_obj_set_style_line_color(needle, lv_palette_main(LV_PALETTE_RED), 0);
     lv_scale_set_line_needle_value(scale, needle, 50, 10);
@@ -343,28 +392,31 @@ static lv_obj_t *createEngineScreen(int scr) {
     gauges[scr] = scale;
     needles[scr] = needle;
 
+    setupMenu(screen);
+
     return screen;
 }
 
-static lv_obj_t *createNavScreen(int scr) {
-     lv_obj_t *screen = lv_obj_create(NULL);
+static lv_obj_t* createNavScreen(int scr) {
+    lv_obj_t* screen = lv_obj_create(NULL);
 
     setupCommonstyles(screen);
+    setupHeader(screen, "Navigation");
 
     ind[scr][0] = new Indicator(screen, "SOG", 0, 0);
     ind[scr][1] = new Indicator(screen, "Depth", 0, TFT_WIDTH / 3);
     ind[scr][2] = new Indicator(screen, "HDG", 0, 2 * TFT_WIDTH / 3);
- 
+
     // Create a container for a gauge for the Wind
-    lv_obj_t *container = createContainer(screen);
-    lv_obj_set_size(container, (TFT_WIDTH/2) - 2 * padding, (TFT_HEIGHT/2) - 2 * padding);
- 
+    lv_obj_t* container = createContainer(screen);
+    lv_obj_set_size(container, (TFT_WIDTH / 2) - 2 * padding, (TFT_HEIGHT / 2) - 2 * padding);
+
     static lv_style_t style;
     lv_style_init(&style);
 
     // Scale for the wind direction
-    lv_obj_t * scale = lv_scale_create(container);
-    lv_obj_set_size(scale, (TFT_WIDTH /2) - (2 * padding) - (2 * border) , (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
+    lv_obj_t* scale = lv_scale_create(container);
+    lv_obj_set_size(scale, (TFT_WIDTH / 2) - (2 * padding) - (2 * border), (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
     lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
     lv_obj_set_style_bg_opa(scale, LV_OPA_50, 0);
     lv_obj_set_style_bg_color(scale, lv_color_black(), 0);
@@ -398,8 +450,8 @@ static lv_obj_t *createNavScreen(int scr) {
     lv_style_set_line_width(&indicator_style, 2); /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
-    static const char * compass_ticks[] = {
-                "", "30", "60", "90", "120", "150", "180", "210", "240", "270", "300", "330", "360"};
+    static const char* compass_ticks[] = {
+                "", "30", "60", "90", "120", "150", "180", "210", "240", "270", "300", "330", "360" };
     lv_scale_set_text_src(scale, compass_ticks);
 
     static lv_style_t scale_style;
@@ -407,42 +459,49 @@ static lv_obj_t *createNavScreen(int scr) {
     lv_style_set_line_width(&scale_style, 6);
 
     lv_obj_add_style(scale, &scale_style, LV_PART_ANY);
-    lv_obj_t * needle = lv_line_create(scale);
+    lv_obj_t* needle = lv_line_create(scale);
 
 
     lv_obj_set_style_line_width(needle, 5, 0);
     lv_obj_set_style_line_rounded(needle, true, 0);
     lv_obj_set_style_line_color(needle, lv_palette_main(LV_PALETTE_RED), 0);
 
- //   lv_scale_set_line_needle_value(scale, needle, 50, 10);
+    //   lv_scale_set_line_needle_value(scale, needle, 50, 10);
 
-    // Save the scale line and image for updates
+       // Save the scale line and image for updates
     gauges[scr] = scale;
     needles[scr] = needle;
+
+    setupMenu(screen);
 
     return screen;
 }
 
 // Screen for the GNSS status and info
-static lv_obj_t *createGNSSScreen(int scr) {
-    lv_obj_t *screen = lv_obj_create(NULL);
+static lv_obj_t* createGNSSScreen(int scr) {
+    lv_obj_t* screen = lv_obj_create(NULL);
     setupCommonstyles(screen);
-
-    ind[scr][0] = new Indicator(screen, "SATS", 0, 0);
-    ind[scr][1] = new Indicator(screen, "HDOP", 0, TFT_WIDTH / 3);
-    ind[scr][2] = new Indicator(screen, "UTC", 0, 2 * TFT_WIDTH / 3);
+    setupHeader(screen, "GPS");
 
 
+    ind[scr][SATS] = new Indicator(screen, "Sats", 0, 0);
+    ind[scr][HDOP] = new Indicator(screen, "HDOP", 0, 0);
+    ind[scr][LAT] = new Indicator(screen, "LAT", 0, TFT_WIDTH / 3);
+    ind[scr][LONG] = new Indicator(screen, "LON", 0, TFT_WIDTH / 3);
+    ind[scr][UTC] = new Indicator(screen, "UTC", 0, TFT_WIDTH / 3);
+
+    setupMenu(screen);
     return screen;
 }
 
 // Screen for the environmental status and info
-static lv_obj_t *createEnvScreen(int scr) {
-    lv_obj_t *screen = lv_obj_create(NULL);
+static lv_obj_t* createEnvScreen(int scr) {
+    lv_obj_t* screen = lv_obj_create(NULL);
     setupCommonstyles(screen);
+    setupHeader(screen, "Environment");
 
-        // Info bar at the top
-    bars[scr][0] = new InfoBar(screen, 0,0);
+    // Info bar at the top
+//    bars[scr][0] = new InfoBar(screen);
 
 
     ind[scr][0] = new Indicator(screen, "Air Temp", 0, 0);
@@ -452,31 +511,42 @@ static lv_obj_t *createEnvScreen(int scr) {
     ind[scr][4] = new Indicator(screen, "Wind Speed", TFT_HEIGHT / 2, TFT_WIDTH / 3);
     ind[scr][5] = new Indicator(screen, "Apparent Wind", TFT_HEIGHT / 2, 2 * TFT_WIDTH / 3);
 
-    // Info bar at the bottom
-    bars[scr][0] = new InfoBar(screen, 0,0);
-
+    //    // Info bar at the bottom
+    //    bars[scr][0] = new InfoBar(screen);
+    setupMenu(screen);
     return screen;
 }
 
 // Screens for system info
-static lv_obj_t *createInfoScreen(int scr) {
-    lv_obj_t *screen = lv_obj_create(NULL);
+static lv_obj_t* createInfoScreen(int scr) {
+    const char* title = "";
+    if (scr == SCR_NETWORK) {
+        title = "Network";
+    }
+    else if (scr == SCR_SYSINFO) {
+        title = "System Info";
+    }
+    else if (scr == SCR_MSGS) {
+        title = "N2K Messages";
+    }
+    else if (scr == SCR_BOOT) {
+        title = "Boot Messages";
+    }
+    lv_obj_t* screen = lv_obj_create(NULL);
     lv_obj_set_width(screen, TFT_WIDTH);
     lv_obj_set_height(screen, TFT_HEIGHT);
     lv_obj_set_align(screen, LV_ALIGN_CENTER);
     setupCommonstyles(screen);
-
-    // Info title bar
-    bars[scr][0] = new InfoBar(screen, 0, 0);
+    setupHeader(screen, title);
 
     // Create a text area to display the info text
     textAreas[scr] = lv_textarea_create(screen);
-    lv_obj_set_size(textAreas[scr], TFT_WIDTH, TFT_HEIGHT);
+    lv_obj_set_size(textAreas[scr], TFT_WIDTH, TFT_HEIGHT - (2 * HEIGHT_INFO));
     lv_obj_align(textAreas[scr], LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_font(textAreas[scr], &RobotoCondensedVariableFont_wght16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_add_event_cb(textAreas[scr], my_event_cb, LV_EVENT_ALL, NULL);
-
+    //    lv_obj_add_event_cb(textAreas[scr], my_event_cb, LV_EVENT_ALL, NULL);
+    setupDataMenu(screen);
     return screen;
 }
 
@@ -488,16 +558,21 @@ void metersWork(void) {
     delay(tick_delay);
 }
 
-// Set the value of a meter using a double
-void setMeter(int scr, int idx, double value, const char *units) {
+// Set the value of a meter using a double and precision of 2
+void setMeter(Screens scr, MeterIdx idx, double value, const char* units) {
+    setMeter(scr, idx, value, units, 2);
+}
+
+// Set the value of a meter using a double and set the precision
+void setMeter(Screens scr, MeterIdx idx, double value, const char* units, uint32_t prec) {
     if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
-        String v(value, 2);
+        String v(value, prec);
         v += units;
         ind[scr][idx]->setValue(v.c_str());
     }
 }
 
-void setGauge(int scr, double value) {
+void setGauge(Screens scr, double value) {
     if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
         lv_scale_set_line_needle_value(gauges[scr], needles[scr], TFT_WIDTH, (int32_t)value);
         Serial.printf("Setting scr %d gauge to %f (%d)\n", scr, value, (int32_t)value);
@@ -505,26 +580,26 @@ void setGauge(int scr, double value) {
 }
 
 // Set the value of a meter using a string
-void setMeter(int scr, int idx, String &string) {
+void setMeter(Screens scr, MeterIdx idx, String& string) {
     if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
         ind[scr][idx]->setValue(string.c_str());
     }
 }
 
 // set using a char *
-void setMeter(int scr, int idx, char * str) {
+void setMeter(Screens scr, MeterIdx idx, const char* str) {
     if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
         ind[scr][idx]->setValue(str);
     }
 }
 
-void setVlabel(int scr, String &str) {
+void setVlabel(Screens scr, String& str) {
     if (scr >= 0 && scr < SCR_MAX && vals[scr]) {
         lv_label_set_text(vals[scr], str.c_str());
     }
 }
 
-void setilabel(int scr, String &str) {
+void setilabel(Screens scr, String& str) {
     if (scr >= 0 && scr < SCR_MAX && infos[scr]) {
         lv_label_set_text(infos[scr], str.c_str());
     }
@@ -532,95 +607,5 @@ void setilabel(int scr, String &str) {
 
 // Load the first screen
 void loadScreen() {
-    // Get the last screen number if set and use that
-    String scrnum = GwGetVal(GWSCREEN);
-    if (scrnum != "---") {
-        iiscrnum = scrnum.toInt() % SCR_MAX;
-    }
-    if(screen[iiscrnum]) {
-        lv_scr_load(screen[iiscrnum]);
-    }
+    lv_scr_load(screen[SCR_ENGINE]);
 }
-
-// set a value in the GNSSChart
-void setGNSSSignal(uint32_t idx, uint32_t val) {
-    if (idx < 0 || idx > MAXSATS)
-        return;  // Ignore bad index
-
-//    GNSSChartSeries->points[idx] = val;
-//   lv_chart_refresh(GNSSChart);
-}
-
-// set one of the indicators in the sjky view
-void setGNSSSky(uint32_t idx, double azimuth, double declination) {
-    if (idx < 0 || idx > MAXSATS)
-        return;  // Ignore bad index
-    if (azimuth < 0 || azimuth > 360 || declination < 0 || declination > 90) {
-        return;  // Ignore inplausible values
-    }
-/*
-    // Green dot for the sky view
-    if (!satData[idx].dot) {
-        // First time for this index so create the image object
- //       LV_IMG_DECLARE(green_dot);
- //       satData[idx].dot = lv_img_create(skyView);
- //       lv_img_set_src(satData[idx].dot, &green_dot);
-    }
-    uint32_t dotw, doth;
-    dotw = lv_obj_get_width(satData[idx].dot);
-    doth = lv_obj_get_height(satData[idx].dot);
-    uint32_t skyw, skyh;
-    skyw = lv_obj_get_width(skyView);
-    skyh = lv_obj_get_height(skyView);
-    double rad = skyw / 2 - dotw;
-    rad *= cos(DegToRad(declination));
-    int32_t x = sin(DegToRad(azimuth)) * rad;
-    int32_t y = cos(DegToRad(azimuth)) * rad;
-    int32_t xorig = skyw / 2 - dotw / 2;
-    int32_t yorig = skyh / 2 - doth / 2;
-    //    Serial.printf("IDX %d AZ %f DEC %f RAD %f X %d Y %d\n", idx, azimuth, declination, rad, x, y);
-    lv_obj_set_pos(satData[idx].dot, xorig + x, yorig - y);
-    */
-}
-
-// Initialise the sky view for the nunber of satellites. Removes any old ones not needed
-void initGNSSSky(uint32_t svs) {
-    for (int i = svs; i < MAXSATS; i++) {
-        if (satData[i].dot) {
-            lv_obj_del(satData[i].dot);
-            satData[i].dot = NULL;
-        }
-    }
-}
-
-// Init the signal display to the number of SVs
-void initGNSSSignal(uint32_t svs) {
-    for (int i = svs; i < MAXSATS; i++) {
-//        if (GNSSChartSeries->points[i]) {
-//            GNSSChartSeries->points[i] = 0;
- //           lv_chart_refresh(GNSSChart);
-//        }
-    }
-}
-
-#else
-// Stubs for now
-// void metersTask(void* param);
-#include <Arduino.h>
-void metersSetup() {}
-void metersWork(){} 
-void setMeter(int scr, int ind, double, const char *){}
-void setMeter(int scr, int ind, char *){}
-void setGauge(int scr, double){}
-void setVlabel(int, String &){}
-void setilabel(int scr, String &){}
-void loadScreen(){}
-void displayText(const char *){}
-void initGNSSSky(uint32_t svs) {}
-
-// Init the signal display to the number of SVs
-void initGNSSSignal(uint32_t svs) {}
-void setGNSSSky(uint32_t idx, double azimuth, double declination) {}
-void setGNSSSignal(uint32_t idx, uint32_t val) {}
-
-#endif

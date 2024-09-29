@@ -5,6 +5,61 @@
 #define MIN_SNR 35
 #define MAX_SNR 50
 
+#define HEIGH_IND   (TFT_HEIGHT/4)
+#define HEIGHT_INFO (TFT_HEIGHT/8)
+
+// Define the screens. This is the ordfer they are in at startup
+typedef enum {
+    SCR_BOOT,
+    SCR_ENGINE,
+    SCR_NAV,
+    SCR_GNSS,
+    SCR_ENV,
+    SCR_NETWORK,
+    SCR_SYSINFO,
+    SCR_MSGS,
+    SCR_MAX
+} Screens;
+
+// screen menu buttons
+typedef enum {
+    BTN_ENGINE,
+    BTN_NAV,
+    BTN_GNSS,
+    BTN_ENV,
+    BTN_DATA,
+    BTN_MAX
+}BTN;
+
+// Indicator indexes
+typedef enum {
+    HOUSEV = 0,
+    HOUSEI = 1,
+    ENGINEV = 2,
+    ENGINERPM = 3,
+
+    // Indexes for the nav info screen
+    SOG = 0,
+    DEPTH = 1,
+    HDG = 2,
+
+    // Indexes for the GNSS screen
+    SATS = 0,
+    HDOP, 
+    LAT, 
+    LONG,
+    UTC,
+
+    // Environmental
+    AIRTEMP = 0,
+    HUM = 1,
+    PRESSURE = 2,
+    SEATEMP = 3,
+    WINDSP = 4,
+    WINDANGLE = 5,
+} MeterIdx;
+
+
 typedef struct {
     double value;
     uint32_t x;
@@ -36,62 +91,43 @@ class Indicator {
 // Class to implement a full width info text area. 
 class InfoBar {
     public:
-    InfoBar(lv_obj_t * parent, uint32_t x, uint32_t y);
+ //   InfoBar() {} // Default constructor needed for derived classes
+    InfoBar(lv_obj_t * parent);
     void setValue(const char * value);
 
     lv_obj_t * container;
     lv_obj_t * text;
 };
 
+
+class MenuBar {
+    public:
+ //   MenuBar() {}  // default constructor
+    MenuBar(lv_obj_t * parent);
+
+    void addButton(const char * label, Screens target);
+    lv_obj_t * container;
+};
+
+typedef struct Buttons {
+    BTN btn;
+    Screens target;
+    const char * label;
+}Buttons;
+
+
 // void metersTask(void* param);
 void metersSetup();
 void metersWork();
-void setMeter(int scr, int ind, double, const char *);
-void setMeter(int scr, int ind, char *);
-void setGauge(int scr, double);
-void setVlabel(int, String &);
-void setilabel(int scr, String &);
+void setMeter(Screens scr, MeterIdx ind, double, const char *, uint32_t prec = 2);
+void setMeter(Screens scr, MeterIdx ind, const char *);
+void setMeter(Screens scr, MeterIdx ind, String & val);
+void setGauge(Screens scr, double);
+void setVlabel(Screens, String &);
+void setilabel(Screens scr, String &);
 void loadScreen();
 void displayText(const char *);
 
-// Define the screens. This is the ordfer they are in at startup
-typedef enum {
-    SCR_BOOT,
-    SCR_ENGINE,
-    SCR_NAV,
-    SCR_GNSS,
-    SCR_ENV,
-    SCR_NETWORK,
-    SCR_SYSINFO,
-    SCR_MSGS,
-    SCR_MAX
-} Screens;
-
-// Indicator indexes
-typedef enum {
-    HOUSEV = 0,
-    HOUSEI = 1,
-    ENGINEV = 2,
-    ENGINERPM = 3,
-
-    // Indexes for the nav info screen
-    SOG = 0,
-    DEPTH = 1,
-    HDG = 2,
-
-    // Indexes for the GNSS screen
-    SATS = 0,
-    HDOP = 1,
-    TIME = 2,
-
-    // Environmental
-    AIRTEMP = 0,
-    HUM = 1,
-    PRESSURE = 2,
-    SEATEMP = 3,
-    WINDSP = 4,
-    WINDANGLE = 5,
-} MeterIdx;
 
 // Set a signal strength indicator for index idx
 void setGNSSSignal(uint32_t idx, uint32_t val);

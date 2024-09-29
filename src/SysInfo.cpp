@@ -27,6 +27,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <NMEA0183Messages.h>
 #include <SysInfo.h>
 #include <esp_wifi.h>
+#include <lvgl.h>
 
 #include "uptime_formatter.h"
 #include <Version.h>
@@ -62,7 +63,7 @@ void getSysInfo(Stream &s) {
     uint32_t flashUsedPc = (flashsize - freeSketch) * 100 / flashsize;
     uint64_t efuse = esp.getEfuseMac();
     String uptime = uptime_formatter::getUptime();
-
+    lv_mem_monitor_t mon;
 
     s.println("=========== SYSTEM ==========");
     s.printf("Version\t\t%s\n", VERSION);
@@ -77,6 +78,10 @@ void getSysInfo(Stream &s) {
     s.printf("Sketch Free\t%d\n", freeSketch);
     s.printf("Flash used\t%d%%\n", flashUsedPc);
     s.printf("Efuse\t\t0x%llx\n", efuse);
+    lv_mem_monitor(&mon);
+    s.printf("LVGL used: %6d (%3d %%), frag: %3d %%, biggest free: %6d\n",
+                     (int)mon.total_size - mon.free_size, mon.used_pct, mon.frag_pct,
+                     (int)mon.free_biggest_size);      
     s.println("=========== SETTINGS ==========");
     GwPrint(s);
     s.println("=========== END ==========");
