@@ -9,6 +9,7 @@
 // SD Reader pins
 // ----------------------------
 // setting for the 4840s040 from here https://homeding.github.io/boards/esp32s3/panel-4848S040.htm
+// These are setup in the pins_arduino.h file
 #define SCK 48
 #define MISO 41
 #define SMOSI 47
@@ -19,7 +20,7 @@
   For example, with the Ethernet shield, set DISABLE_CS_PIN
   to 10 to disable the Ethernet controller.
 */
-const int8_t DISABLE_CS_PIN = 39;
+const int8_t DISABLE_CS_PIN = ST7701_IO_3WIRE_SPI_LINE_CONFIG_CS_GPIO_NUM;
 
 /*
   Change the value of SD_CS_PIN if you are using SPI
@@ -147,7 +148,7 @@ void dateTime(uint16_t* date, uint16_t* t, uint8_t* ms10) {
 
 //-----------------------------------------------------------------------------
 void sdcard_setup() {
-  return;
+//  return;
   Serial.printf("SdFat version: %s ", SD_FAT_VERSION_STR);
   printConfig(SD_CONFIG);
   

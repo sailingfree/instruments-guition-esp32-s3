@@ -112,7 +112,7 @@ public:
             server.send(404, "text/html", "No such file");
             return false;
         } else {
-            server.setContentLength(file.dataLength());
+        //    server.setContentLength(file.dataLength());
             server.sendHeader("Content-Type", "text/html");
             server.send(200, "text/html", "");
             server.sendHeader("Connection", "close");
