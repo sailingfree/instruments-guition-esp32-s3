@@ -27,10 +27,10 @@ static const uint8_t SDA = 8;
 static const uint8_t SCL = 9;
 
 // Changed for the 4840S0CiY1 board
-static const uint8_t SS    = 42;
-static const uint8_t MOSI  = 47;
-static const uint8_t MISO  = 41;
-static const uint8_t SCK   = 48;
+static const uint8_t SS    = SDFAT_SPI_CS;
+static const uint8_t MOSI  = SDFAT_SPI_MOSI;
+static const uint8_t MISO  = SDFAT_SPI_MISO;
+static const uint8_t SCK   = SDFAT_SPI_SCK;
 
 static const uint8_t A0 = 1;
 static const uint8_t A1 = 2;

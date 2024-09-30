@@ -114,7 +114,11 @@
       "'-D BOARD_HAS_RELAY1'",
       "'-D RELAY_1=40'",
       "'-U DISPLAY_IPS'",
-      "'-D LV_COLOR_16_SWAP=0'"
+      "'-D LV_COLOR_16_SWAP=0'",
+      "'-D SDFAT_SPI_SCK=48'",
+      "'-D SDFAT_SPI_CS=42'",
+      "'-D SDFAT_SPI_MOSI=47'",
+      "'-D SDFAT_SPI_MISO=41'"
     
     ],
     "f_cpu": "240000000L",
