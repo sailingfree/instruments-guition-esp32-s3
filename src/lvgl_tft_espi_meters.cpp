@@ -34,11 +34,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //#include <ui/ui.h>
 
 // Forward declarations
-static lv_obj_t* createEngineScreen(int screen);
-static lv_obj_t* createNavScreen(int screen);
-static lv_obj_t* createGNSSScreen(int screen);
-static lv_obj_t* createEnvScreen(int screen);
-static lv_obj_t* createInfoScreen(int screen);
+static lv_obj_t* createEngineScreen(Screens screen);
+static lv_obj_t* createNavScreen(Screens screen);
+static lv_obj_t* createGNSSScreen(Screens screen);
+static lv_obj_t* createEnvScreen(Screens screen);
+static lv_obj_t* createInfoScreen(Screens screen, const char * title);
 
 // Fonts
 extern lv_font_t RobotoCondensedVariableFont_wght16;
@@ -257,15 +257,16 @@ void metersSetup() {
     }
 
     // Create the boot screen for bootup messages
-    screen[SCR_BOOT] = createInfoScreen(SCR_BOOT);
+    screen[SCR_BOOT] = createInfoScreen(SCR_BOOT, "Boot Messages");
     //Create the rest of the screens.
     screen[SCR_ENGINE] = createEngineScreen(SCR_ENGINE);
     screen[SCR_NAV] = createNavScreen(SCR_NAV);
     screen[SCR_GNSS] = createGNSSScreen(SCR_GNSS);
     screen[SCR_ENV] = createEnvScreen(SCR_ENV);
-    screen[SCR_NETWORK] = createInfoScreen(SCR_NETWORK);
-    screen[SCR_SYSINFO] = createInfoScreen(SCR_SYSINFO);
-    screen[SCR_MSGS] = createInfoScreen(SCR_MSGS);
+    screen[SCR_NETWORK] = createInfoScreen(SCR_NETWORK, "Network");
+    screen[SCR_SYSINFO] = createInfoScreen(SCR_SYSINFO, "System Information");
+    screen[SCR_MSGS] = createInfoScreen(SCR_MSGS, "N2K Messages");
+    screen[SCR_SDCARD] = createInfoScreen(SCR_SDCARD, "SD Card");
 
     // Load the boot screen
     lv_obj_t* startScreen = screen[SCR_BOOT];
@@ -317,10 +318,11 @@ static void setupDataMenu(lv_obj_t* screen) {
     menuBar->addButton("Net", SCR_NETWORK);
     menuBar->addButton("Sys", SCR_SYSINFO);
     menuBar->addButton("Msg", SCR_MSGS);
+    menuBar->addButton("SD", SCR_SDCARD);
 }
 
 
-static lv_obj_t* createEngineScreen(int scr) {
+static lv_obj_t* createEngineScreen(Screens scr) {
     lv_obj_t* screen = lv_obj_create(NULL);
 
     setupCommonstyles(screen);
@@ -397,7 +399,7 @@ static lv_obj_t* createEngineScreen(int scr) {
     return screen;
 }
 
-static lv_obj_t* createNavScreen(int scr) {
+static lv_obj_t* createNavScreen(Screens scr) {
     lv_obj_t* screen = lv_obj_create(NULL);
 
     setupCommonstyles(screen);
@@ -478,7 +480,7 @@ static lv_obj_t* createNavScreen(int scr) {
 }
 
 // Screen for the GNSS status and info
-static lv_obj_t* createGNSSScreen(int scr) {
+static lv_obj_t* createGNSSScreen(Screens scr) {
     lv_obj_t* screen = lv_obj_create(NULL);
     setupCommonstyles(screen);
     setupHeader(screen, "GPS");
@@ -495,7 +497,7 @@ static lv_obj_t* createGNSSScreen(int scr) {
 }
 
 // Screen for the environmental status and info
-static lv_obj_t* createEnvScreen(int scr) {
+static lv_obj_t* createEnvScreen(Screens scr) {
     lv_obj_t* screen = lv_obj_create(NULL);
     setupCommonstyles(screen);
     setupHeader(screen, "Environment");
@@ -518,20 +520,8 @@ static lv_obj_t* createEnvScreen(int scr) {
 }
 
 // Screens for system info
-static lv_obj_t* createInfoScreen(int scr) {
-    const char* title = "";
-    if (scr == SCR_NETWORK) {
-        title = "Network";
-    }
-    else if (scr == SCR_SYSINFO) {
-        title = "System Info";
-    }
-    else if (scr == SCR_MSGS) {
-        title = "N2K Messages";
-    }
-    else if (scr == SCR_BOOT) {
-        title = "Boot Messages";
-    }
+static lv_obj_t* createInfoScreen(Screens scr, const char * title) {
+
     lv_obj_t* screen = lv_obj_create(NULL);
     lv_obj_set_width(screen, TFT_WIDTH);
     lv_obj_set_height(screen, TFT_HEIGHT);

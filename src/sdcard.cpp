@@ -9,7 +9,6 @@
 // SD Reader pins
 // ----------------------------
 // setting for the 4840s040 from here https://homeding.github.io/boards/esp32s3/panel-4848S040.htm
-// These are setup in the pins_arduino.h file
 #define SCK 48
 #define MISO 41
 #define SMOSI 47
@@ -37,8 +36,21 @@ const uint8_t SD_CS_PIN = SS;
 const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 #endif  // SDCARD_SS_PIN
 
+#if SPI_DRIVER_SELECT == 2   // This is set in th eboard json file or platformio.ini
+// Use software SPI rather than hardware.
+// This allows easier setting the correct SPI pins, otherwise its 
+// a new class or hack the pins_arduino.h file which gets changed when the
+// esp toolset changes
+// this is a lot slower than hardware but seems to work fine for logging
+SoftSpiDriver<SDFAT_SPI_MISO, SDFAT_SPI_MOSI, SDFAT_SPI_SCK> softSpi;
+
+// Select the best SD card configuration.
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(32), &softSpi)
+#else
 // Select the best SD card configuration.
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(32))
+
+#endif
 
 SdFs sd;
 FsFile file;

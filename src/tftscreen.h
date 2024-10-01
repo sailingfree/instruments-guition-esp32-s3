@@ -18,6 +18,7 @@ typedef enum {
     SCR_NETWORK,
     SCR_SYSINFO,
     SCR_MSGS,
+    SCR_SDCARD,
     SCR_MAX
 } Screens;
 

@@ -39,3 +39,20 @@ https://github.com/rzeldent/esp32-smartdisplay
 ----------------------------------------
 This is the main source of info
 https://github.com/rzeldent/esp32-smartdisplay?tab=readme-ov-file
+
+===============================================================================================
+Backtrace: 0x40377f86:0x3fcebce0 0x4037d35d:0x3fcebd00 0x40383951:0x3fcebd20 0x420ba46d:0x3fcebe50 0x4203d10b:0x3fcebe70 0x4203cbcd:0x3fcebea0 0x4203cfb2:0x3fcebee0 0x420083a6:0x3fcebf10 0x42008062:0x3fcebf40 0x4204d1fe:0x3fcebf70
+  #0  0x40377f86 in panic_abort at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/panic.c:408
+  #1  0x4037d35d in esp_system_abort at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/esp_system/esp_system.c:137 
+  #2  0x40383951 in __assert_func at /home/runner/work/esp32-arduino-lib-builder/esp32-arduino-lib-builder/esp-idf/components/newlib/assert.c:85
+  #3  0x420ba46d in SPIClass::begin(signed char, signed char, signed char, signed char) at C:/Users/peter/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.cpp:73
+  #4  0x4203d10b in SdSpiArduinoDriver::begin(SdSpiConfig) at C:/Users/peter/Nextcloud/Arduino/libraries/SdFat/src/SpiDriver/SdSpiESP.cpp:42
+  #5  0x4203cbcd in SharedSpiCard::spiBegin(SdSpiConfig) at C:/Users/peter/Nextcloud/Arduino/libraries/SdFat/src/SdCard/SdSpiCard.h:310
+      (inlined by) SharedSpiCard::begin(SdSpiConfig) at C:/Users/peter/Nextcloud/Arduino/libraries/SdFat/src/SdCard/SdSpiCard.cpp:143
+  #6  0x4203cfb2 in DedicatedSpiCard::begin(SdSpiConfig) at C:/Users/peter/Nextcloud/Arduino/libraries/SdFat/src/SdCard/SdSpiCard.cpp:707
+  #7  0x420083a6 in SdCardFactory::newCard(SdSpiConfig) at C:/Users/peter/Nextcloud/Arduino/libraries/SdFat/src/SdCard/SdCard.h:70
+      (inlined by) SdBase<FsVolume, FsFormatter>::cardBegin(SdSpiConfig) at C:/Users/peter/Nextcloud/Arduino/libraries/SdFat/src/SdFat.h:104
+      (inlined by) SdBase<FsVolume, FsFormatter>::begin(SdSpiConfig) at C:/Users/peter/Nextcloud/Arduino/libraries/SdFat/src/SdFat.h:83
+      (inlined by) sdcard_setup() at src/sdcard.cpp:164
+  #8  0x42008062 in setup() at src/n2kDisplayMain.cpp:79
+  #9  0x4204d1fe in loopTask(void*) at C:/Users/peter/.platformio/packages/framework-arduinoespressif32/cores/esp32/main.cpp:42
