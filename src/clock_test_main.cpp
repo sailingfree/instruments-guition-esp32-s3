@@ -46,18 +46,17 @@ int utcToGmt(int hour, int year, int month, int day) {
     int result = hour;
 
     Serial.printf("*****Looking for %d %d %d %d\n", hour, year, month, day);
-    for(y = 0; y < max_gmt_dates; y++) {
-        if(bstDates[y].year == year) {
+    for (y = 0; y < max_gmt_dates; y++) {
+        if (bstDates[y].year == year) {
             Serial.printf("Found year %d\n", year);
             // Found the right year
             // Begin with the start and end months as edge cases
-            if((month == bstDates[y].start_month && day >= bstDates[y].start_day) ||
-            (month == bstDates[y].end_month && day <= bstDates[y].end_day) ) {
-                Serial.printf("Matching moths and days ok\n");
+            if ((month == bstDates[y].start_month && day >= bstDates[y].start_day) ||
+                (month == bstDates[y].end_month && day <= bstDates[y].end_day)) {
                 result += 1;
-            } else if(month > bstDates[y].start_month && month < bstDates[y].end_month) {
-                Serial.printf("Month in range\n");
-                result +=1;
+            }
+            else if (month > bstDates[y].start_month && month < bstDates[y].end_month) {
+                result += 1;
             }
         }
     }
@@ -74,7 +73,6 @@ static void timer_cb(lv_timer_t * timer)
 
     if(now > last) {
         last = now;   
-        Serial.printf("minutes %d hours %d\n", tm.tm_min, tm.tm_hour);
 
         /* the scale will store the minute hand line points in `minute_hand_points` */
         lv_scale_set_line_needle_value(scale, minute_hand, size / 2, tm.tm_min);
@@ -85,8 +83,6 @@ static void timer_cb(lv_timer_t * timer)
         Add 1 to the month as the tm struct month starts at 0 for january
         */
         int hour = utcToGmt(tm.tm_hour, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
-
-        Serial.printf("Year %d Mon %d Day %d old hour %d new hour %d\n", tm.tm_year, tm.tm_mon, tm.tm_mday,tm.tm_hour, hour);
 
         // The hour needs to be converted to 60/ths and minutes added
         uint32_t newHour = ((hour % 12) * 5) + (tm.tm_min / 12);
@@ -101,13 +97,12 @@ static void timer_cb(lv_timer_t * timer)
  */
 void lv_example_scale_6(lv_obj_t * parent, uint32_t size)
 {
-    const uint32_t border = TFT_WIDTH/8*2;
     scale = lv_scale_create(parent);
 
     lv_obj_set_size(scale, size, size);
     lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
  
-    lv_obj_set_style_bg_opa(scale, LV_OPA_60, 0);
+    lv_obj_set_style_bg_opa(scale, LV_OPA_80, 0);
     lv_obj_set_style_bg_color(scale, lv_color_black(), 0);
     lv_obj_set_style_radius(scale, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_clip_corner(scale, true, 0);
@@ -131,7 +126,7 @@ void lv_example_scale_6(lv_obj_t * parent, uint32_t size)
 
     /* Major tick properties */
     lv_style_set_line_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_length(&indicator_style, 8); /* tick length */
+    lv_style_set_length(&indicator_style, 16); /* tick length */
     lv_style_set_line_width(&indicator_style, 2); /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
@@ -139,8 +134,8 @@ void lv_example_scale_6(lv_obj_t * parent, uint32_t size)
     static lv_style_t minor_ticks_style;
     lv_style_init(&minor_ticks_style);
     lv_style_set_line_color(&minor_ticks_style, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_length(&minor_ticks_style, 6); /* tick length */
-    lv_style_set_line_width(&minor_ticks_style, 2); /* tick width */
+    lv_style_set_length(&minor_ticks_style, 12); /* tick length */
+    lv_style_set_line_width(&minor_ticks_style, 4); /* tick width */
     lv_obj_add_style(scale, &minor_ticks_style, LV_PART_ITEMS);
 
     /* Main line properties */
