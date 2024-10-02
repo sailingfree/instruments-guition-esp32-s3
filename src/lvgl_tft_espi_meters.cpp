@@ -29,9 +29,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <tftscreen.h>
 #include <NMEA2000.h>
 #include <N2kMessages.h>
+#include <sdcard.h>
 
 #include <esp32_smartdisplay.h>
-//#include <ui/ui.h>
 
 // Forward declarations
 static lv_obj_t* createEngineScreen(Screens screen);
@@ -75,14 +75,45 @@ static const uint32_t border = 2, padding = 2;
 
 static void refreshData() {
     StringStream s;
+
     getSysInfo(s);
     lv_textarea_set_text(textAreas[SCR_SYSINFO], s.data.c_str());
     s.clear();
+
     getN2kMsgs(s);
     lv_textarea_set_text(textAreas[SCR_MSGS], s.data.c_str());
     s.clear();
+
     getNetInfo(s);
     lv_textarea_set_text(textAreas[SCR_NETWORK], s.data.c_str());
+    s.clear();
+
+    if(hasSdCard()) {
+        s.printf("SD Card found. Type: %s\n", getCardType());
+
+        // capacity in in MB (1000000 bytes)
+        uint32_t capacity = getCapacity();
+
+        // Convert to GiB and print
+        s.printf("Sd capacity %d (GB)\n", 
+            capacity /1024);
+
+        StringStream str;
+        sd.printFatType(&str);
+        s.printf("Filesystem type: %s\n", str.data.c_str());
+
+        uint32_t clusters = sd.clusterCount();
+        uint32_t freeclusters = sd.freeClusterCount();
+        uint32_t blkpercluster = sd.sectorsPerCluster();
+
+        s.printf("Total: %d Free: %d\n", clusters * blkpercluster, freeclusters * blkpercluster);
+        s.printf("=======================\n");
+    } else {
+        s.printf("No storage device found\n");
+    }
+    dir("/", 2, s);
+    lv_textarea_set_text(textAreas[SCR_SDCARD], s.data.c_str());
+    s.clear();
 }
 
 // Constructor. Binds to the parent object.

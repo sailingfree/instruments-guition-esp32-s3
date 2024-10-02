@@ -45,10 +45,10 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 SoftSpiDriver<SDFAT_SPI_MISO, SDFAT_SPI_MOSI, SDFAT_SPI_SCK> softSpi;
 
 // Select the best SD card configuration.
-#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(32), &softSpi)
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(10), &softSpi)
 #else
 // Select the best SD card configuration.
-#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(32))
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(50))
 
 #endif
 
