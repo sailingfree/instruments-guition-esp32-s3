@@ -95,7 +95,7 @@ static void timer_cb(lv_timer_t * timer)
 /**
  * A round scale with multiple needles, resembling a clock
  */
-void lv_example_scale_6(lv_obj_t * parent, uint32_t size)
+void clockFace(lv_obj_t * parent, uint32_t size)
 {
     scale = lv_scale_create(parent);
 

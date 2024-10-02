@@ -566,7 +566,7 @@ static lv_obj_t* createInfoScreen(Screens scr, const char * title) {
     return screen;
 }
 
-void lv_example_scale_6(lv_obj_t * parent, uint32_t size);
+void clockFace(lv_obj_t * parent, uint32_t size);
 
 static lv_obj_t * createClockScreen(Screens scr) {
     lv_obj_t * screen = lv_obj_create(NULL);
@@ -577,7 +577,7 @@ static lv_obj_t * createClockScreen(Screens scr) {
     lv_obj_set_height(screen, TFT_HEIGHT);
     lv_obj_set_align(screen, LV_ALIGN_CENTER);
     setupCommonstyles(screen);    
-    lv_example_scale_6(screen, TFT_HEIGHT - (2 * TFT_HEIGHT / 8));
+    clockFace(screen, TFT_HEIGHT - (2 * TFT_HEIGHT / 8));
     setupDataMenu(screen);
     return screen;
 }
