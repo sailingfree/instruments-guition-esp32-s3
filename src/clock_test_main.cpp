@@ -1,58 +1,110 @@
 #include <Arduino.h>
 #include <lvgl.h>
 #include <esp32_smartdisplay.h>
+#include <myFonts.h>
 
 static lv_obj_t * scale;
 static lv_obj_t * minute_hand;
 static lv_obj_t * hour_hand;
+static lv_obj_t * second_hand;
 static lv_point_precise_t minute_hand_points[2];
 static int32_t hour;
 static int32_t minute;
 
-static void timer_cb(lv_timer_t * timer)
-{
-    LV_UNUSED(timer);
+/*
+Dates for GMT clock change
+31st March to 27th October, 2024
+30th March to 26th October, 2025
+29th March to 25th October, 2026
+28th March to 31st October, 2027
+26th March to 29th October, 2028
+25th March to 28th October, 2029
+*/
 
-    minute++;
-    if(minute > 59) {
-        minute = 0;
-        hour++;
-        if(hour > 11) {
-            hour = 0;
+typedef struct {
+    uint32_t    year;
+    uint16_t    start_month;
+    uint16_t    start_day;
+    uint16_t    end_month;
+    uint16_t    end_day;
+} BSTDates;
+
+static const uint16_t max_gmt_dates = 6;
+BSTDates bstDates[max_gmt_dates]  = {
+    {2024,3,31,10,27},
+    {2025,3,30,10,26},
+    {2026,3,29,10,25},
+    {2027,3,28,10,31},
+    {2028,3,26,10,29},
+    {2029,3,25,10,28}
+};
+
+// Convert an hour value in UTC to GMT if it falls within the range
+int utcToGmt(int hour, int year, int month, int day) {
+    // Find an entry.
+    int y;
+    int result = hour;
+
+    Serial.printf("*****Looking for %d %d %d %d\n", hour, year, month, day);
+    for(y = 0; y < max_gmt_dates; y++) {
+        if(bstDates[y].year == year) {
+            Serial.printf("Found year %d\n", year);
+            // Found the right year
+            // Begin with the start and end months as edge cases
+            if((month == bstDates[y].start_month && day >= bstDates[y].start_day) ||
+            (month == bstDates[y].end_month && day <= bstDates[y].end_day) ) {
+                Serial.printf("Matching moths and days ok\n");
+                result += 1;
+            } else if(month > bstDates[y].start_month && month < bstDates[y].end_month) {
+                Serial.printf("Month in range\n");
+                result +=1;
+            }
         }
     }
+    return result;
+}
 
-    /**
-     * the scale will store the needle line points in the existing
-     * point array if one was set with `lv_line_set_points_mutable`.
-     * Otherwise, it will allocate the needle line points.
-     */
+static void timer_cb(lv_timer_t * timer)
+{   
+    uint32_t size = (uint32_t) timer->user_data;
+    static time_t last = 0;
+    struct tm tm;
+    time_t now = time(NULL);
+    gmtime_r(&now, &tm);
 
-    /* the scale will store the minute hand line points in `minute_hand_points` */
-    lv_scale_set_line_needle_value(scale, minute_hand, 60, minute);
-    /* log the points that were stored in the array 
-    LV_LOG_USER(
-        "minute hand points - "
-        "0: (%" my_PRIprecise ", %" my_PRIprecise "), "
-        "1: (%" my_PRIprecise ", %" my_PRIprecise ")",
-        minute_hand_points[0].x, minute_hand_points[0].y,
-        minute_hand_points[1].x, minute_hand_points[1].y
-    );
-    */
-   Serial.printf("minutes %d\n", minute);
+    if(now > last) {
+        last = now;   
+        Serial.printf("minutes %d hours %d\n", tm.tm_min, tm.tm_hour);
 
-    /* the scale will allocate the hour hand line points */
-    lv_scale_set_line_needle_value(scale, hour_hand, 40, hour * 5 + (minute / 12));
+        /* the scale will store the minute hand line points in `minute_hand_points` */
+        lv_scale_set_line_needle_value(scale, minute_hand, size / 2, tm.tm_min);
+ 
+
+        /* the scale will allocate the hour hand line points 
+        Add 1900 to the year as the tm struct starts in 1900
+        Add 1 to the month as the tm struct month starts at 0 for january
+        */
+        int hour = utcToGmt(tm.tm_hour, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+
+        Serial.printf("Year %d Mon %d Day %d old hour %d new hour %d\n", tm.tm_year, tm.tm_mon, tm.tm_mday,tm.tm_hour, hour);
+
+        // The hour needs to be converted to 60/ths and minutes added
+        uint32_t newHour = ((hour % 12) * 5) + (tm.tm_min / 12);
+        lv_scale_set_line_needle_value(scale, hour_hand, 2 * size / 6 , newHour);
+
+        lv_scale_set_line_needle_value(scale, second_hand, size / 2, tm.tm_sec);
+    }
 }
 
 /**
  * A round scale with multiple needles, resembling a clock
  */
-void lv_example_scale_6(lv_obj_t * parent)
+void lv_example_scale_6(lv_obj_t * parent, uint32_t size)
 {
+    const uint32_t border = TFT_WIDTH/8*2;
     scale = lv_scale_create(parent);
 
-    lv_obj_set_size(scale, 150, 150);
+    lv_obj_set_size(scale, size, size);
     lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
  
     lv_obj_set_style_bg_opa(scale, LV_OPA_60, 0);
@@ -60,7 +112,8 @@ void lv_example_scale_6(lv_obj_t * parent)
     lv_obj_set_style_radius(scale, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_clip_corner(scale, true, 0);
     lv_obj_center(scale);
-
+    lv_obj_align(scale, LV_ALIGN_CENTER, 0, 0);
+ 
     lv_scale_set_label_show(scale, true);
  
     lv_scale_set_total_tick_count(scale, 61);
@@ -73,7 +126,7 @@ void lv_example_scale_6(lv_obj_t * parent)
     lv_style_init(&indicator_style);
 
     /* Label style properties */
-    lv_style_set_text_font(&indicator_style, LV_FONT_DEFAULT);
+    lv_style_set_text_font(&indicator_style, &RobotoCondensedVariableFont_wght32);
     lv_style_set_text_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
 
     /* Major tick properties */
@@ -105,37 +158,24 @@ void lv_example_scale_6(lv_obj_t * parent)
     minute_hand = lv_line_create(scale);
     lv_line_set_points_mutable(minute_hand, minute_hand_points, 2);
 
-    lv_obj_set_style_line_width(minute_hand, 3, 0);
+    lv_obj_set_style_line_width(minute_hand, 7, 0);
     lv_obj_set_style_line_rounded(minute_hand, true, 0);
     lv_obj_set_style_line_color(minute_hand, lv_color_white(), 0);
 
     hour_hand = lv_line_create(scale);
 
-    lv_obj_set_style_line_width(hour_hand, 5, 0);
+    lv_obj_set_style_line_width(hour_hand, 9, 0);
     lv_obj_set_style_line_rounded(hour_hand, true, 0);
     lv_obj_set_style_line_color(hour_hand, lv_palette_main(LV_PALETTE_RED), 0);
 
+    second_hand = lv_line_create(scale);
+
+    lv_obj_set_style_line_width(second_hand, 9, 0);
+    lv_obj_set_style_line_rounded(second_hand, true, 0);
+    lv_obj_set_style_line_color(second_hand, lv_palette_main(LV_PALETTE_LIGHT_BLUE), 0);
+
     hour = 11;
     minute = 5;
-    lv_timer_t * timer = lv_timer_create(timer_cb, 250, NULL);
+    lv_timer_t * timer = lv_timer_create(timer_cb, 250, (void *) size);
     lv_timer_ready(timer);
 }
-
-#if 0
-void setup() {
-    smartdisplay_init();
-    smartdisplay_lcd_set_backlight(1.0f);
-    lv_example_scale_6();
-    lv_display_t * display = lv_display_get_default();
-//    lv_theme_t * th = lv_theme_simple_init(display);
-//    lv_disp_set_theme(display, th);
-}
-
-void loop() {
-    static const uint32_t tick_delay = 50;
-    uint32_t ret = lv_task_handler(); /* let the GUI do its work */
-    lv_tick_inc(tick_delay);
-    delay(tick_delay);
-}
-
-#endif

@@ -30,7 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <NMEA2000.h>
 #include <N2kMessages.h>
 #include <sdcard.h>
-
+#include <myFonts.h>
 #include <esp32_smartdisplay.h>
 
 // Forward declarations
@@ -39,15 +39,7 @@ static lv_obj_t* createNavScreen(Screens screen);
 static lv_obj_t* createGNSSScreen(Screens screen);
 static lv_obj_t* createEnvScreen(Screens screen);
 static lv_obj_t* createInfoScreen(Screens screen, const char * title);
-
-// Fonts
-extern lv_font_t RobotoCondensedVariableFont_wght16;
-extern lv_font_t RobotoCondensedVariableFont_wght24;
-extern lv_font_t RobotoCondensedVariableFont_wght32;
-extern lv_font_t RobotoCondensedVariableFont_wght42;
-extern lv_font_t RobotoCondensedVariableFont_wght52;
-extern lv_font_t RobotoCondensedVariableFont_wght64;
-extern lv_font_t Anton64;
+static lv_obj_t* createClockScreen(Screens screen);
 
 // Static data items for the screens and their data items
 static Indicator* ind[SCR_MAX][12];
@@ -196,6 +188,7 @@ void InfoBar::setValue(const char* value) {
 }
 
 
+#define BAR_HEIGHT  ((TFT_HEIGHT / 8) - 2 * padding)
 
 MenuBar::MenuBar(lv_obj_t* parent) {
     // Constructor. Binds to the parent object.
@@ -203,7 +196,7 @@ MenuBar::MenuBar(lv_obj_t* parent) {
 
     container = lv_obj_create(parent);
     lv_obj_set_width(container, (TFT_WIDTH)-2 * padding);
-    lv_obj_set_height(container, (TFT_HEIGHT / 8) - 2 * padding);
+    lv_obj_set_height(container, BAR_HEIGHT);
     lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_style_init(&style);
@@ -298,6 +291,7 @@ void metersSetup() {
     screen[SCR_SYSINFO] = createInfoScreen(SCR_SYSINFO, "System Information");
     screen[SCR_MSGS] = createInfoScreen(SCR_MSGS, "N2K Messages");
     screen[SCR_SDCARD] = createInfoScreen(SCR_SDCARD, "SD Card");
+    screen[SCR_CLOCK] = createClockScreen(SCR_CLOCK);
 
     // Load the boot screen
     lv_obj_t* startScreen = screen[SCR_BOOT];
@@ -350,6 +344,7 @@ static void setupDataMenu(lv_obj_t* screen) {
     menuBar->addButton("Sys", SCR_SYSINFO);
     menuBar->addButton("Msg", SCR_MSGS);
     menuBar->addButton("SD", SCR_SDCARD);
+    menuBar->addButton("Clock", SCR_CLOCK);
 }
 
 
@@ -567,6 +562,22 @@ static lv_obj_t* createInfoScreen(Screens scr, const char * title) {
     lv_obj_set_style_text_font(textAreas[scr], &RobotoCondensedVariableFont_wght16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     //    lv_obj_add_event_cb(textAreas[scr], my_event_cb, LV_EVENT_ALL, NULL);
+    setupDataMenu(screen);
+    return screen;
+}
+
+void lv_example_scale_6(lv_obj_t * parent, uint32_t size);
+
+static lv_obj_t * createClockScreen(Screens scr) {
+    lv_obj_t * screen = lv_obj_create(NULL);
+//    setupCommonstyles(screen);
+    setupHeader(screen, "Time UTC");
+
+    lv_obj_set_width(screen, TFT_WIDTH);
+    lv_obj_set_height(screen, TFT_HEIGHT);
+    lv_obj_set_align(screen, LV_ALIGN_CENTER);
+    setupCommonstyles(screen);    
+    lv_example_scale_6(screen, TFT_HEIGHT - (2 * TFT_HEIGHT / 8));
     setupDataMenu(screen);
     return screen;
 }
