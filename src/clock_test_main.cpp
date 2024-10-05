@@ -2,6 +2,7 @@
 #include <lvgl.h>
 #include <esp32_smartdisplay.h>
 #include <myFonts.h>
+#include <myTime.h>
 
 static lv_obj_t * scale;
 static lv_obj_t * minute_hand;
@@ -11,57 +12,6 @@ static lv_point_precise_t minute_hand_points[2];
 static int32_t hour;
 static int32_t minute;
 
-/*
-Dates for GMT clock change
-31st March to 27th October, 2024
-30th March to 26th October, 2025
-29th March to 25th October, 2026
-28th March to 31st October, 2027
-26th March to 29th October, 2028
-25th March to 28th October, 2029
-*/
-
-typedef struct {
-    uint32_t    year;
-    uint16_t    start_month;
-    uint16_t    start_day;
-    uint16_t    end_month;
-    uint16_t    end_day;
-} BSTDates;
-
-static const uint16_t max_gmt_dates = 6;
-BSTDates bstDates[max_gmt_dates]  = {
-    {2024,3,31,10,27},
-    {2025,3,30,10,26},
-    {2026,3,29,10,25},
-    {2027,3,28,10,31},
-    {2028,3,26,10,29},
-    {2029,3,25,10,28}
-};
-
-// Convert an hour value in UTC to GMT if it falls within the range
-int utcToGmt(int hour, int year, int month, int day) {
-    // Find an entry.
-    int y;
-    int result = hour;
-
-    Serial.printf("*****Looking for %d %d %d %d\n", hour, year, month, day);
-    for (y = 0; y < max_gmt_dates; y++) {
-        if (bstDates[y].year == year) {
-            Serial.printf("Found year %d\n", year);
-            // Found the right year
-            // Begin with the start and end months as edge cases
-            if ((month == bstDates[y].start_month && day >= bstDates[y].start_day) ||
-                (month == bstDates[y].end_month && day <= bstDates[y].end_day)) {
-                result += 1;
-            }
-            else if (month > bstDates[y].start_month && month < bstDates[y].end_month) {
-                result += 1;
-            }
-        }
-    }
-    return result;
-}
 
 static void timer_cb(lv_timer_t * timer)
 {   
@@ -153,21 +103,21 @@ void clockFace(lv_obj_t * parent, uint32_t size)
     minute_hand = lv_line_create(scale);
     lv_line_set_points_mutable(minute_hand, minute_hand_points, 2);
 
-    lv_obj_set_style_line_width(minute_hand, 7, 0);
+    lv_obj_set_style_line_width(minute_hand, 5, 0);
     lv_obj_set_style_line_rounded(minute_hand, true, 0);
     lv_obj_set_style_line_color(minute_hand, lv_color_white(), 0);
 
     hour_hand = lv_line_create(scale);
 
-    lv_obj_set_style_line_width(hour_hand, 9, 0);
+    lv_obj_set_style_line_width(hour_hand, 7, 0);
     lv_obj_set_style_line_rounded(hour_hand, true, 0);
-    lv_obj_set_style_line_color(hour_hand, lv_palette_main(LV_PALETTE_RED), 0);
+    lv_obj_set_style_line_color(hour_hand, lv_color_white(), 0);
 
     second_hand = lv_line_create(scale);
 
-    lv_obj_set_style_line_width(second_hand, 9, 0);
+    lv_obj_set_style_line_width(second_hand, 3, 0);
     lv_obj_set_style_line_rounded(second_hand, true, 0);
-    lv_obj_set_style_line_color(second_hand, lv_palette_main(LV_PALETTE_LIGHT_BLUE), 0);
+    lv_obj_set_style_line_color(second_hand, lv_palette_main(LV_PALETTE_RED), 0);
 
     hour = 11;
     minute = 5;

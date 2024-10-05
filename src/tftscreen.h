@@ -39,6 +39,7 @@ typedef enum {
     HOUSEI = 1,
     ENGINEV = 2,
     ENGINERPM = 3,
+    ENGINETEMP,
 
     // Indexes for the nav info screen
     SOG = 0,
@@ -50,7 +51,8 @@ typedef enum {
     HDOP, 
     LAT, 
     LONG,
-    UTC,
+    TIME,
+    ALT,
 
     // Environmental
     AIRTEMP = 0,
@@ -93,8 +95,7 @@ class Indicator {
 // Class to implement a full width info text area. 
 class InfoBar {
     public:
- //   InfoBar() {} // Default constructor needed for derived classes
-    InfoBar(lv_obj_t * parent);
+    InfoBar(lv_obj_t * parent, uint32_t y);
     void setValue(const char * value);
 
     lv_obj_t * container;
@@ -104,8 +105,7 @@ class InfoBar {
 
 class MenuBar {
     public:
- //   MenuBar() {}  // default constructor
-    MenuBar(lv_obj_t * parent);
+    MenuBar(lv_obj_t * parent, uint32_t y);
 
     void addButton(const char * label, Screens target);
     lv_obj_t * container;
@@ -128,6 +128,7 @@ void setGauge(Screens scr, double);
 void setVlabel(Screens, String &);
 void setilabel(Screens scr, String &);
 void loadScreen();
+void loadScreen(Screens scr);
 void displayText(const char *);
 
 

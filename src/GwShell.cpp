@@ -31,7 +31,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <SysInfo.h>
 #include <sdcard.h>
 #include <GwLogger.h>
-
+#include <tftscreen.h>
 #include <map>
 
 static std::map<int, String> History;
@@ -235,6 +235,13 @@ int df(int argc, char ** argv) {
     return 0;
 }
 
+int changeScreen(int argc, char ** argv) {
+    if(argc > 1) {
+        loadScreen((Screens)atoi(argv[1]));
+    }
+    return 0;
+}
+
 // Initialise the shell and add the commands
 // The format of the command is HELP_TEXT<space>CMD
 void initGwShell() {
@@ -253,6 +260,7 @@ void initGwShell() {
     shell.addCommand(F("cat \t\tRead the logfile"), catlog);
     shell.addCommand(F("rm \t\tDelete a file"), rmfile);
     shell.addCommand(F("df \t\tDisplays details of the storage"), df);
+    shell.addCommand(F("cs \t\tChange screen"), changeScreen);
 }
 
 // Print a prompt to the terminal

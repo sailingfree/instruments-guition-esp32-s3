@@ -31,6 +31,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <N2kMessages.h>
 #include <sdcard.h>
 #include <myFonts.h>
+#include <myTime.h>
 #include <esp32_smartdisplay.h>
 
 // Forward declarations
@@ -53,6 +54,20 @@ static lv_obj_t* infos[SCR_MAX];
 // define text areas
 static lv_obj_t* textAreas[SCR_MAX];
 
+// Define the positions of elements on the screen.
+// The elements are laid out in a grid with a header and footer
+#define IND_HEIGHT      (TFT_HEIGHT / 4)
+#define IND_WIDTH       (TFT_WIDTH / 2)
+#define BAR_HEIGHT      (TFT_HEIGHT / 8)
+#define BAR_WIDTH       (TFT_WIDTH)
+#define BAR_ROW_TOP     (0)
+#define BAR_ROW_BOTTOM  (TFT_HEIGHT - BAR_HEIGHT)
+#define ROW1            (BAR_HEIGHT)
+#define ROW2            (ROW1 + IND_HEIGHT)
+#define ROW3            (ROW2 + IND_HEIGHT)
+#define COL1            (0)
+#define COL2            (TFT_WIDTH / 2)
+
 // Print some text to the boot info screen textarea
 void displayText(const char* str) {
     if (textAreas[SCR_BOOT]) {
@@ -65,46 +80,62 @@ void displayText(const char* str) {
 
 static const uint32_t border = 2, padding = 2;
 
-static void refreshData() {
+// refresh the data for a given screen
+static void refreshData(Screens scr) {
     StringStream s;
 
-    getSysInfo(s);
-    lv_textarea_set_text(textAreas[SCR_SYSINFO], s.data.c_str());
-    s.clear();
+    switch (scr) {
+    case SCR_SYSINFO:
+        s.clear();
+        getSysInfo(s);
+        lv_textarea_set_text(textAreas[SCR_SYSINFO], s.data.c_str());
+        break;
 
-    getN2kMsgs(s);
-    lv_textarea_set_text(textAreas[SCR_MSGS], s.data.c_str());
-    s.clear();
+    case SCR_MSGS:
+        s.clear();
+        getN2kMsgs(s);
+        lv_textarea_set_text(textAreas[SCR_MSGS], s.data.c_str());
+        break;
 
-    getNetInfo(s);
-    lv_textarea_set_text(textAreas[SCR_NETWORK], s.data.c_str());
-    s.clear();
+    case SCR_NETWORK:
+        s.clear();
+        getNetInfo(s);
+        lv_textarea_set_text(textAreas[SCR_NETWORK], s.data.c_str());
+        break;
 
-    if(hasSdCard()) {
-        s.printf("SD Card found. Type: %s\n", getCardType());
+    case SCR_SDCARD:
+        s.clear();
 
-        // capacity in in MB (1000000 bytes)
-        uint32_t capacity = getCapacity();
+        if (hasSdCard()) {
+            s.printf("SD Card found. Type: %s\n", getCardType());
 
-        // Convert to GiB and print
-        s.printf("Sd capacity %d (GB)\n", 
-            capacity /1024);
+            // capacity in in MB (1000000 bytes)
+            uint32_t capacity = getCapacity();
 
-        StringStream str;
-        sd.printFatType(&str);
-        s.printf("Filesystem type: %s\n", str.data.c_str());
+            // Convert to GiB and print
+            s.printf("Sd capacity %d (GB)\n",
+                capacity / 1024);
 
-        uint32_t clusters = sd.clusterCount();
-        uint32_t freeclusters = sd.freeClusterCount();
-        uint32_t blkpercluster = sd.sectorsPerCluster();
+            StringStream str;
+            sd.printFatType(&str);
+            s.printf("Filesystem type: %s\n", str.data.c_str());
 
-        s.printf("Total: %d Free: %d\n", clusters * blkpercluster, freeclusters * blkpercluster);
-        s.printf("=======================\n");
-    } else {
-        s.printf("No storage device found\n");
+            uint32_t clusters = sd.clusterCount();
+            uint32_t freeclusters = sd.freeClusterCount();
+            uint32_t blkpercluster = sd.sectorsPerCluster();
+
+            s.printf("Total: %d Free: %d\n", clusters * blkpercluster, freeclusters * blkpercluster);
+            s.printf("=======================\n");
+        }
+        else {
+            s.printf("No storage device found\n");
+        }
+        dir("/", 2, s);
+        lv_textarea_set_text(textAreas[SCR_SDCARD], s.data.c_str());
+        break;
+    default:
+        break;
     }
-    dir("/", 2, s);
-    lv_textarea_set_text(textAreas[SCR_SDCARD], s.data.c_str());
     s.clear();
 }
 
@@ -115,8 +146,9 @@ Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y)
     static lv_style_t style;
 
     container = lv_obj_create(parent);
-    lv_obj_set_width(container, (TFT_WIDTH / 2) - 2 * padding);
-    lv_obj_set_height(container, (TFT_HEIGHT / 4) - 2 * padding);
+    lv_obj_set_pos(container, x, y);
+    lv_obj_set_width(container, IND_WIDTH - (2 * padding));
+    lv_obj_set_height(container, IND_HEIGHT - (2 * padding));
 
     lv_style_init(&style);
     lv_style_set_border_width(&style, border);
@@ -142,17 +174,18 @@ Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y)
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, 0);
 
     lv_label_set_text(text, "---");
-    //   lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
+     //   lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
 }
 
 // Constructor. Binds to the parent object.
-InfoBar::InfoBar(lv_obj_t* parent) {
+InfoBar::InfoBar(lv_obj_t* parent, uint32_t y) {
     static lv_style_t style;
     static lv_style_t value_style;
 
     container = lv_obj_create(parent);
-    lv_obj_set_width(container, (TFT_WIDTH)-2 * padding);
-    lv_obj_set_height(container, (TFT_HEIGHT / 8) - 2 * padding);
+    lv_obj_set_pos(container, 0, y);
+    lv_obj_set_width(container, (BAR_WIDTH) - (2 * padding));
+    lv_obj_set_height(container, (BAR_HEIGHT) - 2 * padding);
     lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_style_init(&style);
@@ -188,14 +221,15 @@ void InfoBar::setValue(const char* value) {
 }
 
 
-#define BAR_HEIGHT  ((TFT_HEIGHT / 8) - 2 * padding)
+//#define BAR_HEIGHT  ((TFT_HEIGHT / 8) - 2 * padding)
 
-MenuBar::MenuBar(lv_obj_t* parent) {
+MenuBar::MenuBar(lv_obj_t* parent, uint32_t y) {
     // Constructor. Binds to the parent object.
     static lv_style_t style;
 
     container = lv_obj_create(parent);
-    lv_obj_set_width(container, (TFT_WIDTH)-2 * padding);
+    lv_obj_set_pos(container, 0, y);
+    lv_obj_set_width(container, (BAR_WIDTH)-2 * padding);
     lv_obj_set_height(container, BAR_HEIGHT);
     lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -216,7 +250,7 @@ static void buttonHandler(lv_event_t* e) {
     if (code == LV_EVENT_CLICKED) {
         Serial.printf("Target is %d\n", s);
         if (s >= 0 && s < SCR_MAX && screen[s]) {
-            refreshData();
+            refreshData(s);
             lv_scr_load(screen[s]);
         }
     }
@@ -312,8 +346,8 @@ static void setupCommonstyles(lv_obj_t* obj) {
     //    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN);
     lv_obj_set_style_pad_gap(obj, padding, 0);
 
-    lv_obj_set_layout(obj, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_ROW_WRAP);
+//    lv_obj_set_layout(obj, LV_LAYOUT_FLEX);
+//    lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_height(obj, TFT_HEIGHT);
     lv_obj_set_width(obj, TFT_WIDTH);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
@@ -321,14 +355,14 @@ static void setupCommonstyles(lv_obj_t* obj) {
 
 static void setupHeader(lv_obj_t* screen, const char* title) {
     // Info bar at the tope
-    InfoBar* bar = new InfoBar(screen);
+    InfoBar* bar = new InfoBar(screen, BAR_ROW_TOP);
     //    bars[scr][0] = bar;
     bar->setValue(title);
 }
 
 
 static void setupMenu(lv_obj_t* screen) {
-    MenuBar* menuBar = new MenuBar(screen);
+    MenuBar* menuBar = new MenuBar(screen, BAR_ROW_BOTTOM);
     menuBar->addButton("Eng", SCR_ENGINE);
     menuBar->addButton("Nav", SCR_NAV);
     menuBar->addButton("GPS", SCR_GNSS);
@@ -338,7 +372,7 @@ static void setupMenu(lv_obj_t* screen) {
 
 
 static void setupDataMenu(lv_obj_t* screen) {
-    MenuBar* menuBar = new MenuBar(screen);
+    MenuBar* menuBar = new MenuBar(screen, BAR_ROW_BOTTOM);
     menuBar->addButton("Home", SCR_ENGINE);
     menuBar->addButton("Net", SCR_NETWORK);
     menuBar->addButton("Sys", SCR_SYSINFO);
@@ -346,6 +380,7 @@ static void setupDataMenu(lv_obj_t* screen) {
     menuBar->addButton("SD", SCR_SDCARD);
     menuBar->addButton("Clock", SCR_CLOCK);
 }
+
 
 
 static lv_obj_t* createEngineScreen(Screens scr) {
@@ -356,21 +391,22 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     setupHeader(screen, "Engine");
 
     // Create the indicator panels
-    ind[scr][HOUSEV] = new Indicator(screen, "House Voltage", 0, 0);
-    ind[scr][HOUSEI] = new Indicator(screen, "House Current", 0, TFT_WIDTH / 3);
-    ind[scr][ENGINEV] = new Indicator(screen, "Engine Voltage", 0, 2 * TFT_WIDTH / 3);
+    ind[scr][HOUSEV] = new Indicator(screen, "House Voltage", COL1, ROW1);
+    ind[scr][HOUSEI] = new Indicator(screen, "House Current", COL2, ROW1);
+    ind[scr][ENGINEV] = new Indicator(screen, "Engine Voltage", COL1, ROW2);
+    ind[scr][ENGINETEMP] = new Indicator(screen, "Temp", COL1, ROW3);
 
     // Create a container for a gauge
     lv_obj_t* container = createContainer(screen);
     lv_obj_set_size(container, (TFT_WIDTH / 2) - 2 * padding, (TFT_HEIGHT / 2) - 2 * padding);
-    //    lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
+    lv_obj_set_pos(container, COL2, ROW2);
 
         // Meter for the RPM
     lv_obj_t* scale = lv_scale_create(container);
 
     lv_obj_set_size(scale, (TFT_WIDTH / 2) - (2 * padding) - (2 * border), (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
     lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
-    lv_obj_set_style_bg_opa(scale, LV_OPA_60, 0);
+    lv_obj_set_style_bg_opa(scale, LV_OPA_80, 0);
     lv_obj_set_style_bg_color(scale, lv_color_black(), 0);
     lv_obj_set_style_radius(scale, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_clip_corner(scale, true, 0);
@@ -381,7 +417,7 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     lv_style_init(&indicator_style);
 
     /* Label style properties */
-    lv_style_set_text_font(&indicator_style, LV_FONT_DEFAULT);
+    lv_style_set_text_font(&indicator_style, &RobotoCondensedVariableFont_wght24);
     lv_style_set_text_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
 
     /* Major tick properties */
@@ -390,7 +426,7 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     lv_style_set_line_width(&indicator_style, 2); /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
-    static const char* rpm_ticks[] = { "0", "500", "1000", "1500", "2000", "2500", "3000", "3500" };
+    static const char* rpm_ticks[] = { "0", "5", "10", "15", "20", "25", "30", "35" };
     lv_scale_set_text_src(scale, rpm_ticks);
     lv_scale_set_label_show(scale, true);
     lv_scale_set_total_tick_count(scale, 31);
@@ -416,6 +452,17 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     lv_obj_set_style_line_color(needle, lv_palette_main(LV_PALETTE_RED), 0);
     lv_scale_set_line_needle_value(scale, needle, 50, 10);
 
+    // Label in the dial
+    const char * lab = "RPM x100";
+    lv_obj_t * label = lv_label_create(scale);
+    lv_label_set_text(label, lab);
+
+    lv_obj_set_style_text_font(label, &RobotoCondensedVariableFont_wght16, 0);
+    lv_obj_set_style_text_color(label, lv_palette_main(LV_PALETTE_YELLOW), 0);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    uint32_t w = lv_text_get_width(lab, strlen(lab), &RobotoCondensedVariableFont_wght16, 1);
+    lv_obj_set_pos(label,TFT_WIDTH /4 - (w /2), TFT_HEIGHT / 3);
+
     // Save the scale line and image for updates
     gauges[scr] = scale;
     needles[scr] = needle;
@@ -431,13 +478,14 @@ static lv_obj_t* createNavScreen(Screens scr) {
     setupCommonstyles(screen);
     setupHeader(screen, "Navigation");
 
-    ind[scr][0] = new Indicator(screen, "SOG", 0, 0);
-    ind[scr][1] = new Indicator(screen, "Depth", 0, TFT_WIDTH / 3);
-    ind[scr][2] = new Indicator(screen, "HDG", 0, 2 * TFT_WIDTH / 3);
+    ind[scr][0] = new Indicator(screen, "SOG", COL1, ROW1);
+    ind[scr][1] = new Indicator(screen, "Depth", COL2, ROW1);
+    ind[scr][2] = new Indicator(screen, "HDG", COL1, ROW2);
 
     // Create a container for a gauge for the Wind
     lv_obj_t* container = createContainer(screen);
     lv_obj_set_size(container, (TFT_WIDTH / 2) - 2 * padding, (TFT_HEIGHT / 2) - 2 * padding);
+    lv_obj_set_pos(container, COL2, ROW2);
 
     static lv_style_t style;
     lv_style_init(&style);
@@ -446,7 +494,7 @@ static lv_obj_t* createNavScreen(Screens scr) {
     lv_obj_t* scale = lv_scale_create(container);
     lv_obj_set_size(scale, (TFT_WIDTH / 2) - (2 * padding) - (2 * border), (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
     lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
-    lv_obj_set_style_bg_opa(scale, LV_OPA_50, 0);
+    lv_obj_set_style_bg_opa(scale, LV_OPA_80, 0);
     lv_obj_set_style_bg_color(scale, lv_color_black(), 0);
     lv_obj_set_style_radius(scale, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_clip_corner(scale, true, 0);
@@ -469,7 +517,7 @@ static lv_obj_t* createNavScreen(Screens scr) {
     lv_style_init(&indicator_style);
 
     /* Label style properties */
-    lv_style_set_text_font(&indicator_style, LV_FONT_DEFAULT);
+    lv_style_set_text_font(&indicator_style, &RobotoCondensedVariableFont_wght24);
     lv_style_set_text_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
 
     /* Major tick properties */
@@ -494,7 +542,16 @@ static lv_obj_t* createNavScreen(Screens scr) {
     lv_obj_set_style_line_rounded(needle, true, 0);
     lv_obj_set_style_line_color(needle, lv_palette_main(LV_PALETTE_RED), 0);
 
-    //   lv_scale_set_line_needle_value(scale, needle, 50, 10);
+    // Label in the dial
+    const char * lab = "App Wind";
+    lv_obj_t * label = lv_label_create(scale);
+    lv_label_set_text(label, lab);
+
+    lv_obj_set_style_text_font(label, &RobotoCondensedVariableFont_wght24, 0);
+    lv_obj_set_style_text_color(label, lv_palette_main(LV_PALETTE_YELLOW), 0);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    uint32_t w = lv_text_get_width(lab, strlen(lab), &RobotoCondensedVariableFont_wght24, 1);
+    lv_obj_set_pos(label,TFT_WIDTH /4 - (w /2), TFT_HEIGHT / 3);
 
        // Save the scale line and image for updates
     gauges[scr] = scale;
@@ -511,12 +568,12 @@ static lv_obj_t* createGNSSScreen(Screens scr) {
     setupCommonstyles(screen);
     setupHeader(screen, "GPS");
 
-
-    ind[scr][SATS] = new Indicator(screen, "Sats", 0, 0);
-    ind[scr][HDOP] = new Indicator(screen, "HDOP", 0, 0);
-    ind[scr][LAT] = new Indicator(screen, "LAT", 0, TFT_WIDTH / 3);
-    ind[scr][LONG] = new Indicator(screen, "LON", 0, TFT_WIDTH / 3);
-    ind[scr][UTC] = new Indicator(screen, "UTC", 0, TFT_WIDTH / 3);
+    ind[scr][SATS] = new Indicator(screen, "Sats", COL1, ROW1);
+    ind[scr][HDOP] = new Indicator(screen, "HDOP", COL2, ROW1);
+    ind[scr][LAT] = new Indicator(screen, "LAT", COL1, ROW2);
+    ind[scr][LONG] = new Indicator(screen, "LON", COL2, ROW2);
+    ind[scr][TIME] = new Indicator(screen, "Time", COL1, ROW3);
+    ind[scr][ALT] = new Indicator(screen, "Altitude", COL2, ROW3);
 
     setupMenu(screen);
     return screen;
@@ -532,12 +589,12 @@ static lv_obj_t* createEnvScreen(Screens scr) {
 //    bars[scr][0] = new InfoBar(screen);
 
 
-    ind[scr][0] = new Indicator(screen, "Air Temp", 0, 0);
-    ind[scr][1] = new Indicator(screen, "Humidity", 0, TFT_WIDTH / 3);
-    ind[scr][2] = new Indicator(screen, "Pressure", 0, 2 * TFT_WIDTH / 3);
-    ind[scr][3] = new Indicator(screen, "Sea Temp", TFT_HEIGHT / 2, 0);
-    ind[scr][4] = new Indicator(screen, "Wind Speed", TFT_HEIGHT / 2, TFT_WIDTH / 3);
-    ind[scr][5] = new Indicator(screen, "Apparent Wind", TFT_HEIGHT / 2, 2 * TFT_WIDTH / 3);
+    ind[scr][0] = new Indicator(screen, "Air Temp", COL1, ROW1);
+    ind[scr][1] = new Indicator(screen, "Humidity", COL1, ROW2);
+    ind[scr][2] = new Indicator(screen, "Pressure", COL1, ROW3);
+    ind[scr][3] = new Indicator(screen, "Sea Temp", COL2, ROW1);
+    ind[scr][4] = new Indicator(screen, "Wind Speed", COL2, ROW2);
+    ind[scr][5] = new Indicator(screen, "Apparent Wind", COL2, ROW3);
 
     //    // Info bar at the bottom
     //    bars[scr][0] = new InfoBar(screen);
@@ -570,8 +627,9 @@ void clockFace(lv_obj_t * parent, uint32_t size);
 
 static lv_obj_t * createClockScreen(Screens scr) {
     lv_obj_t * screen = lv_obj_create(NULL);
-//    setupCommonstyles(screen);
-    setupHeader(screen, "Time UTC");
+    const char * title = "Current Time";
+
+    setupHeader(screen, title);
 
     lv_obj_set_width(screen, TFT_WIDTH);
     lv_obj_set_height(screen, TFT_HEIGHT);
@@ -639,4 +697,11 @@ void setilabel(Screens scr, String& str) {
 // Load the first screen
 void loadScreen() {
     lv_scr_load(screen[SCR_ENGINE]);
+}
+
+// Load a numbered screen
+void loadScreen(Screens scr) {
+    if(scr >= 0 && scr < SCR_MAX) {
+        lv_scr_load(screen[scr]);
+    }
 }
