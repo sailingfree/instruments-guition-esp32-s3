@@ -3,6 +3,7 @@
 #include <esp32_smartdisplay.h>
 #include <myFonts.h>
 #include <myTime.h>
+#include <tftscreen.h>
 
 static lv_obj_t * scale;
 static lv_obj_t * minute_hand;
@@ -39,6 +40,10 @@ static void timer_cb(lv_timer_t * timer)
         lv_scale_set_line_needle_value(scale, hour_hand, 2 * size / 6 , newHour);
 
         lv_scale_set_line_needle_value(scale, second_hand, size / 2, tm.tm_sec);
+
+        static char buf[64];
+        snprintf(buf, 63, "%d:%d:%d", (hour) % 24, tm.tm_min, tm.tm_sec);
+        updateClocks(buf);
     }
 }
 

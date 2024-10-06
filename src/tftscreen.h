@@ -134,6 +134,7 @@ void setilabel(Screens scr, String &);
 void loadScreen();
 void loadScreen(Screens scr);
 void displayText(const char *);
+void updateClocks(const char * t);
 
 
 // Set a signal strength indicator for index idx
