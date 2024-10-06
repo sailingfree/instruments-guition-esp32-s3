@@ -42,7 +42,7 @@ static void timer_cb(lv_timer_t * timer)
         lv_scale_set_line_needle_value(scale, second_hand, size / 2, tm.tm_sec);
 
         static char buf[64];
-        snprintf(buf, 63, "%d:%d:%d", (hour) % 24, tm.tm_min, tm.tm_sec);
+        snprintf(buf, 63, "%02d:%02d:%02d", (hour) % 24, tm.tm_min, tm.tm_sec);
         updateClocks(buf);
     }
 }

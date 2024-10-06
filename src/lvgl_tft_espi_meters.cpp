@@ -212,13 +212,11 @@ InfoBar::InfoBar(lv_obj_t* parent, uint32_t y) {
     lv_style_set_text_font(&value_style, &RobotoCondensedVariableFont_wght42);
     lv_obj_add_style(text, &value_style, 0);
     lv_obj_set_align(text, LV_ALIGN_LEFT_MID);
- //   lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_LEFT, 0);
 
     curTime = lv_label_create(container);
     lv_obj_add_style(curTime, &value_style, 0);
     lv_label_set_text(curTime, "00:00:00");
     lv_obj_set_align(curTime, LV_ALIGN_RIGHT_MID);
-//    lv_obj_set_style_text_align(curTime, LV_TEXT_ALIGN_RIGHT, 0);
 }
 
 void InfoBar::setValue(const char* value) {
