@@ -343,11 +343,8 @@ static lv_obj_t* createContainer(lv_obj_t* cont) {
 }
 
 static void setupCommonstyles(lv_obj_t* obj) {
-    //    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN);
     lv_obj_set_style_pad_gap(obj, padding, 0);
 
-//    lv_obj_set_layout(obj, LV_LAYOUT_FLEX);
-//    lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_height(obj, TFT_HEIGHT);
     lv_obj_set_width(obj, TFT_WIDTH);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
@@ -400,8 +397,9 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     lv_obj_t* container = createContainer(screen);
     lv_obj_set_size(container, (TFT_WIDTH / 2) - 2 * padding, (TFT_HEIGHT / 2) - 2 * padding);
     lv_obj_set_pos(container, COL2, ROW2);
+    lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
 
-        // Meter for the RPM
+    // Meter for the RPM
     lv_obj_t* scale = lv_scale_create(container);
 
     lv_obj_set_size(scale, (TFT_WIDTH / 2) - (2 * padding) - (2 * border), (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
@@ -411,7 +409,6 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     lv_obj_set_style_radius(scale, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_clip_corner(scale, true, 0);
     lv_obj_center(scale);
-    //    lv_obj_set_style_pad_gap(container, padding, 0);
 
     static lv_style_t indicator_style;
     lv_style_init(&indicator_style);
@@ -486,7 +483,8 @@ static lv_obj_t* createNavScreen(Screens scr) {
     lv_obj_t* container = createContainer(screen);
     lv_obj_set_size(container, (TFT_WIDTH / 2) - 2 * padding, (TFT_HEIGHT / 2) - 2 * padding);
     lv_obj_set_pos(container, COL2, ROW2);
-
+    lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
+    
     static lv_style_t style;
     lv_style_init(&style);
 
