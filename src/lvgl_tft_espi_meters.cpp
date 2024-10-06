@@ -49,7 +49,7 @@ static lv_obj_t* gauges[SCR_MAX];
 static lv_obj_t* needles[SCR_MAX];
 static lv_obj_t* vals[SCR_MAX];
 static lv_obj_t* infos[SCR_MAX];
-//static InfoBar  *bars[SCR_MAX][2];
+static InfoBar  *bars[SCR_MAX];
 
 // define text areas
 static lv_obj_t* textAreas[SCR_MAX];
@@ -216,7 +216,7 @@ InfoBar::InfoBar(lv_obj_t* parent, uint32_t y) {
 
     curTime = lv_label_create(container);
     lv_obj_add_style(curTime, &value_style, 0);
-    lv_label_set_text(curTime, "12:23:44");
+    lv_label_set_text(curTime, "00:00:00");
     lv_obj_set_align(curTime, LV_ALIGN_RIGHT_MID);
 //    lv_obj_set_style_text_align(curTime, LV_TEXT_ALIGN_RIGHT, 0);
 }
@@ -358,10 +358,10 @@ static void setupCommonstyles(lv_obj_t* obj) {
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 }
 
-static void setupHeader(lv_obj_t* screen, const char* title) {
+static void setupHeader(Screens scr, lv_obj_t* screen, const char* title) {
     // Info bar at the tope
     InfoBar* bar = new InfoBar(screen, BAR_ROW_TOP);
-    //    bars[scr][0] = bar;
+    bars[scr] = bar;
     bar->setValue(title);
 }
 
@@ -393,7 +393,7 @@ static lv_obj_t* createEngineScreen(Screens scr) {
 
     setupCommonstyles(screen);
 
-    setupHeader(screen, "Engine");
+    setupHeader(scr, screen, "Engine");
 
     // Create the indicator panels
     ind[scr][HOUSEV] = new Indicator(screen, "House Voltage", COL1, ROW1);
@@ -481,7 +481,7 @@ static lv_obj_t* createNavScreen(Screens scr) {
     lv_obj_t* screen = lv_obj_create(NULL);
 
     setupCommonstyles(screen);
-    setupHeader(screen, "Navigation");
+    setupHeader(scr, screen, "Navigation");
 
     ind[scr][0] = new Indicator(screen, "SOG", COL1, ROW1);
     ind[scr][1] = new Indicator(screen, "Depth", COL2, ROW1);
@@ -572,7 +572,7 @@ static lv_obj_t* createNavScreen(Screens scr) {
 static lv_obj_t* createGNSSScreen(Screens scr) {
     lv_obj_t* screen = lv_obj_create(NULL);
     setupCommonstyles(screen);
-    setupHeader(screen, "GPS");
+    setupHeader(scr, screen, "GPS");
 
     ind[scr][SATS] = new Indicator(screen, "Sats", COL1, ROW1);
     ind[scr][HDOP] = new Indicator(screen, "HDOP", COL2, ROW1);
@@ -589,7 +589,7 @@ static lv_obj_t* createGNSSScreen(Screens scr) {
 static lv_obj_t* createEnvScreen(Screens scr) {
     lv_obj_t* screen = lv_obj_create(NULL);
     setupCommonstyles(screen);
-    setupHeader(screen, "Environment");
+    setupHeader(scr, screen, "Environment");
 
     // Info bar at the top
 //    bars[scr][0] = new InfoBar(screen);
@@ -616,7 +616,7 @@ static lv_obj_t* createInfoScreen(Screens scr, const char * title) {
     lv_obj_set_height(screen, TFT_HEIGHT);
     lv_obj_set_align(screen, LV_ALIGN_CENTER);
     setupCommonstyles(screen);
-    setupHeader(screen, title);
+    setupHeader(scr, screen, title);
 
     // Create a text area to display the info text
     textAreas[scr] = lv_textarea_create(screen);
@@ -635,7 +635,7 @@ static lv_obj_t * createClockScreen(Screens scr) {
     lv_obj_t * screen = lv_obj_create(NULL);
     const char * title = "Current Time";
 
-    setupHeader(screen, title);
+    setupHeader(scr, screen, title);
 
     lv_obj_set_width(screen, TFT_WIDTH);
     lv_obj_set_height(screen, TFT_HEIGHT);
@@ -709,5 +709,14 @@ void loadScreen() {
 void loadScreen(Screens scr) {
     if(scr >= 0 && scr < SCR_MAX) {
         lv_scr_load(screen[scr]);
+    }
+}
+
+// Update all the clocks in the headers
+void updateClocks(const char * t) {
+    for(int c = 0; c < SCR_MAX; c++) {
+        if(bars[c]) {
+            bars[c]->setTime(t);
+        }
     }
 }

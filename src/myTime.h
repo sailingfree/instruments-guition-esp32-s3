@@ -6,7 +6,7 @@ typedef struct {
     uint16_t    end_day;
 } BSTDates;
 
-// Given a date return 1 if the date is BST, 0 otherwise
+// Given a date returns the hour adjusted to BST if required.
 int utcToGmt(int hour, int year, int month, int day);
 
 // Return true if the current time is BST
