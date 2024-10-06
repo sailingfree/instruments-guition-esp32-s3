@@ -97,9 +97,13 @@ class InfoBar {
     public:
     InfoBar(lv_obj_t * parent, uint32_t y);
     void setValue(const char * value);
+    void setTime(const char * t);
+
+    bool isActive;
 
     lv_obj_t * container;
     lv_obj_t * text;
+    lv_obj_t * curTime;
 };
 
 

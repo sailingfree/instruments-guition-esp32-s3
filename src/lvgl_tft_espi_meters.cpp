@@ -178,6 +178,7 @@ Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y)
 }
 
 // Constructor. Binds to the parent object.
+// Info bar has the screen title and the time
 InfoBar::InfoBar(lv_obj_t* parent, uint32_t y) {
     static lv_style_t style;
     static lv_style_t value_style;
@@ -198,9 +199,10 @@ InfoBar::InfoBar(lv_obj_t* parent, uint32_t y) {
 
     lv_obj_add_style(container, &style, 0);
 
-    lv_obj_set_layout(container, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
+//    lv_obj_set_layout(container, LV_LAYOUT_FLEX);
+//    lv_obj_set_flex_flow(container, LV_FLEX_FLOW_ROW);
 
+    // Title text
     text = lv_label_create(container);
     lv_style_init(&value_style);
     lv_style_set_bg_opa(&value_style, LV_OPA_100);
@@ -209,17 +211,23 @@ InfoBar::InfoBar(lv_obj_t* parent, uint32_t y) {
     lv_style_set_pad_all(&value_style, 10);
     lv_style_set_text_font(&value_style, &RobotoCondensedVariableFont_wght42);
     lv_obj_add_style(text, &value_style, 0);
-    lv_obj_set_align(text, LV_ALIGN_CENTER);
-    lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_align(text, LV_ALIGN_LEFT_MID);
+ //   lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_LEFT, 0);
 
-    //    lv_label_set_text(text, "test test test test test test");
-    //    lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
+    curTime = lv_label_create(container);
+    lv_obj_add_style(curTime, &value_style, 0);
+    lv_label_set_text(curTime, "12:23:44");
+    lv_obj_set_align(curTime, LV_ALIGN_RIGHT_MID);
+//    lv_obj_set_style_text_align(curTime, LV_TEXT_ALIGN_RIGHT, 0);
 }
 
 void InfoBar::setValue(const char* value) {
     lv_label_set_text(text, value);
 }
 
+void InfoBar::setTime(const char * t) {
+   lv_label_set_text(curTime, t);
+}
 
 //#define BAR_HEIGHT  ((TFT_HEIGHT / 8) - 2 * padding)
 
@@ -322,7 +330,7 @@ void metersSetup() {
     screen[SCR_GNSS] = createGNSSScreen(SCR_GNSS);
     screen[SCR_ENV] = createEnvScreen(SCR_ENV);
     screen[SCR_NETWORK] = createInfoScreen(SCR_NETWORK, "Network");
-    screen[SCR_SYSINFO] = createInfoScreen(SCR_SYSINFO, "System Information");
+    screen[SCR_SYSINFO] = createInfoScreen(SCR_SYSINFO, "System");
     screen[SCR_MSGS] = createInfoScreen(SCR_MSGS, "N2K Messages");
     screen[SCR_SDCARD] = createInfoScreen(SCR_SDCARD, "SD Card");
     screen[SCR_CLOCK] = createClockScreen(SCR_CLOCK);
@@ -484,7 +492,7 @@ static lv_obj_t* createNavScreen(Screens scr) {
     lv_obj_set_size(container, (TFT_WIDTH / 2) - 2 * padding, (TFT_HEIGHT / 2) - 2 * padding);
     lv_obj_set_pos(container, COL2, ROW2);
     lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
-    
+
     static lv_style_t style;
     lv_style_init(&style);
 
