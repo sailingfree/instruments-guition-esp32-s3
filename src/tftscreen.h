@@ -15,6 +15,7 @@ typedef enum {
     SCR_NAV,
     SCR_GNSS,
     SCR_ENV,
+    SCR_TRIP,
     SCR_NETWORK,
     SCR_SYSINFO,
     SCR_MSGS,
@@ -42,9 +43,10 @@ typedef enum {
     ENGINETEMP,
 
     // Indexes for the nav info screen
-    SOG = 0,
-    DEPTH = 1,
-    HDG = 2,
+    NAV_SOG = 0,
+    NAV_DEPTH = 1,
+    NAV_HDG = 2,
+    NAV_WIND =3,
 
     // Indexes for the GNSS screen
     SATS = 0,
@@ -61,6 +63,14 @@ typedef enum {
     SEATEMP = 3,
     WINDSP = 4,
     WINDANGLE = 5,
+
+    // Trip
+    TR_DISTANCE = 0,
+    TR_TIME, 
+    TR_AVGSPEED,
+    TR_MAXSPEED,
+    TR_AVGWIND,
+    TR_MAXWIND
 } MeterIdx;
 
 
@@ -112,6 +122,7 @@ class MenuBar {
     MenuBar(lv_obj_t * parent, uint32_t y);
 
     void addButton(const char * label, Screens target);
+    void addActionButton(const char * label, void (*ptr)(lv_event_t *));
     lv_obj_t * container;
 };
 

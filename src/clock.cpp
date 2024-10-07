@@ -126,6 +126,6 @@ void clockFace(lv_obj_t * parent, uint32_t size)
 
     hour = 11;
     minute = 5;
-    lv_timer_t * timer = lv_timer_create(timer_cb, 250, (void *) size);
+    lv_timer_t * timer = lv_timer_create(timer_cb, 1000, (void *) size);
     lv_timer_ready(timer);
 }

@@ -93,7 +93,11 @@ void getN2kMsgs(Stream &s) {
     std::map<int, int>::iterator it = N2kMsgMap.begin();
 
     s.println("======== N2K Messages ====");
-    s.printf("PGN\tCount\tFunction\n");
+    // Fixed width positions - tabs dont work in the display!
+    // PGN=8 chars
+    // Count=6
+    // Function=remainder
+    s.printf("PGN     Count  Function\n");
 
     while (it != N2kMsgMap.end()) {
         const char *name = "unknown";
@@ -156,7 +160,7 @@ void getN2kMsgs(Stream &s) {
                 name = "GNSS Sats in view";
                 break;
         }
-        s.printf("%d\t%d\t%s\n", it->first, it->second, name);
+        s.printf("%6d  %6d   %s\n", it->first, it->second, name);
         it++;
     }
     s.println("=========== END ==========");

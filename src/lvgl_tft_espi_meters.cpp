@@ -41,6 +41,7 @@ static lv_obj_t* createGNSSScreen(Screens screen);
 static lv_obj_t* createEnvScreen(Screens screen);
 static lv_obj_t* createInfoScreen(Screens screen, const char * title);
 static lv_obj_t* createClockScreen(Screens screen);
+static lv_obj_t* createTripScreen(Screens screen);
 
 // Static data items for the screens and their data items
 static Indicator* ind[SCR_MAX][12];
@@ -78,7 +79,7 @@ void displayText(const char* str) {
 }
 
 
-static const uint32_t border = 2, padding = 2;
+static const uint32_t border = 1, padding = 0;
 
 // refresh the data for a given screen
 static void refreshData(Screens scr) {
@@ -174,7 +175,6 @@ Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y)
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, 0);
 
     lv_label_set_text(text, "---");
-     //   lv_obj_add_event_cb(container, my_event_cb, LV_EVENT_ALL, NULL);
 }
 
 // Constructor. Binds to the parent object.
@@ -297,6 +297,42 @@ void MenuBar::addButton(const char* label, Screens target) {
     lv_obj_add_event_cb(b, buttonHandler, LV_EVENT_ALL, (void*)target);
 }
 
+// Add a button to a menu bar. The callback will change the screen to the target
+void MenuBar::addActionButton(const char* label, void (*ptr)(lv_event_t * e)) {
+    lv_obj_t* b = lv_button_create(container);
+    lv_obj_t* l = lv_label_create(b);
+    lv_label_set_text(l, label);
+    lv_obj_set_flex_grow(b, 1);
+    /*Init the style for the default state*/
+    static lv_style_t style;
+    lv_style_init(&style);
+
+    lv_style_set_radius(&style, 3);
+
+    lv_style_set_bg_opa(&style, LV_OPA_100);
+    lv_style_set_bg_color(&style, lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_bg_grad_color(&style, lv_palette_darken(LV_PALETTE_BLUE, 2));
+    lv_style_set_bg_grad_dir(&style, LV_GRAD_DIR_VER);
+
+    lv_style_set_border_opa(&style, LV_OPA_40);
+    lv_style_set_border_width(&style, 2);
+    lv_style_set_border_color(&style, lv_palette_main(LV_PALETTE_GREY));
+
+    lv_style_set_shadow_width(&style, 8);
+    lv_style_set_shadow_color(&style, lv_palette_main(LV_PALETTE_GREY));
+    lv_style_set_shadow_offset_y(&style, 8);
+
+    lv_style_set_outline_opa(&style, LV_OPA_COVER);
+    lv_style_set_outline_color(&style, lv_palette_main(LV_PALETTE_BLUE));
+
+    lv_style_set_text_color(&style, lv_color_white());
+    lv_style_set_pad_all(&style, 10);
+    //    lv_obj_remove_style_all(b);
+    lv_obj_add_style(b, &style, 0);
+    lv_obj_add_event_cb(b, ptr, LV_EVENT_ALL, NULL);
+}
+
+
 void Indicator::setValue(const char* value) {
     lv_label_set_text(text, value);
 }
@@ -327,6 +363,7 @@ void metersSetup() {
     screen[SCR_NAV] = createNavScreen(SCR_NAV);
     screen[SCR_GNSS] = createGNSSScreen(SCR_GNSS);
     screen[SCR_ENV] = createEnvScreen(SCR_ENV);
+    screen[SCR_TRIP] = createTripScreen(SCR_TRIP);
     screen[SCR_NETWORK] = createInfoScreen(SCR_NETWORK, "Network");
     screen[SCR_SYSINFO] = createInfoScreen(SCR_SYSINFO, "System");
     screen[SCR_MSGS] = createInfoScreen(SCR_MSGS, "N2K Messages");
@@ -363,12 +400,87 @@ static void setupHeader(Screens scr, lv_obj_t* screen, const char* title) {
     bar->setValue(title);
 }
 
+// Data for the trip computer.
+// gets cleared on startup
+uint32_t    trDistance;
+uint32_t    trTime;
+uint32_t    trMaxSpeed;
+uint32_t    trMaxWind;
+uint32_t    trAvgSpeed;
+uint32_t    trAvgWind;
+
+
+static void resetTrip(lv_event_t * e) {
+    trDistance = trTime = trMaxSpeed = trMaxWind = trAvgSpeed = trAvgWind = 0;
+}
+
+static void startTrip(lv_event_t *e) {
+
+}
+
+static void pauseTrip(lv_event_t *e) {
+
+}
+
+static void stopTrip(lv_event_t *e) {
+
+}
+
+// calback for the trip computer
+static void timer_cb(lv_timer_t * timer)
+{   
+    uint32_t size = (uint32_t) timer->user_data;
+    static time_t last = 0;
+    struct tm tm;
+    time_t now = time(NULL);
+    gmtime_r(&now, &tm);
+    if(tm.tm_sec > last) {
+        last = tm.tm_sec;
+        String v(trDistance);
+        ind[SCR_TRIP][TR_DISTANCE]->setValue(v.c_str());
+    }
+}
+
+
+// Screens for the trip computer
+static void setupTripMenu(lv_obj_t * screen) {
+    MenuBar* menuBar = new MenuBar(screen, BAR_ROW_BOTTOM);
+    menuBar->addButton("Home", SCR_ENGINE);
+    menuBar->addActionButton("Reset", resetTrip);
+    menuBar->addActionButton(">", startTrip);
+    menuBar->addActionButton("||", pauseTrip);
+    menuBar->addButton("Data", SCR_NETWORK);
+}
+static lv_obj_t* createTripScreen(Screens scr) {
+
+    lv_obj_t* screen = lv_obj_create(NULL);
+    lv_obj_set_width(screen, TFT_WIDTH);
+    lv_obj_set_height(screen, TFT_HEIGHT);
+    lv_obj_set_align(screen, LV_ALIGN_CENTER);
+    setupCommonstyles(screen);
+    setupHeader(scr, screen, "Trip");
+
+    ind[scr][TR_DISTANCE]   = new Indicator(screen, "Distance", COL1, ROW1);
+    ind[scr][TR_TIME]       = new Indicator(screen, "Time", COL2, ROW1);
+    ind[scr][TR_AVGSPEED]   = new Indicator(screen, "Avg speed", COL1, ROW2);
+    ind[scr][TR_MAXSPEED]   = new Indicator(screen, "Max speed", COL2, ROW2);
+    ind[scr][TR_AVGWIND]    = new Indicator(screen, "Avg Wind", COL1, ROW3);
+    ind[scr][TR_MAXWIND]    = new Indicator(screen, "Max Wind", COL2, ROW3);
+
+    setupTripMenu(screen);
+
+    lv_timer_t * timer = lv_timer_create(timer_cb, 1000, NULL);
+    lv_timer_ready(timer);
+
+    return screen;
+}
 
 static void setupMenu(lv_obj_t* screen) {
     MenuBar* menuBar = new MenuBar(screen, BAR_ROW_BOTTOM);
     menuBar->addButton("Eng", SCR_ENGINE);
     menuBar->addButton("Nav", SCR_NAV);
     menuBar->addButton("GPS", SCR_GNSS);
+    menuBar->addButton("TRP", SCR_TRIP);
     menuBar->addButton("Env", SCR_ENV);
     menuBar->addButton("Data", SCR_NETWORK);
 }
@@ -481,9 +593,10 @@ static lv_obj_t* createNavScreen(Screens scr) {
     setupCommonstyles(screen);
     setupHeader(scr, screen, "Navigation");
 
-    ind[scr][0] = new Indicator(screen, "SOG", COL1, ROW1);
-    ind[scr][1] = new Indicator(screen, "Depth", COL2, ROW1);
-    ind[scr][2] = new Indicator(screen, "HDG", COL1, ROW2);
+    ind[scr][NAV_SOG] = new Indicator(screen, "SOG", COL1, ROW1);
+    ind[scr][NAV_DEPTH] = new Indicator(screen, "Depth", COL2, ROW1);
+    ind[scr][NAV_HDG] = new Indicator(screen, "HDG", COL1, ROW2);
+    ind[scr][NAV_WIND] = new Indicator(screen, "App Wind", COL1, ROW3);
 
     // Create a container for a gauge for the Wind
     lv_obj_t* container = createContainer(screen);
@@ -606,6 +719,7 @@ static lv_obj_t* createEnvScreen(Screens scr) {
     return screen;
 }
 
+
 // Screens for system info
 static lv_obj_t* createInfoScreen(Screens scr, const char * title) {
 
@@ -622,7 +736,6 @@ static lv_obj_t* createInfoScreen(Screens scr, const char * title) {
     lv_obj_align(textAreas[scr], LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_font(textAreas[scr], &RobotoCondensedVariableFont_wght16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    //    lv_obj_add_event_cb(textAreas[scr], my_event_cb, LV_EVENT_ALL, NULL);
     setupDataMenu(screen);
     return screen;
 }
@@ -669,6 +782,7 @@ void setMeter(Screens scr, MeterIdx idx, double value, const char* units, uint32
 void setGauge(Screens scr, double value) {
     if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
         lv_scale_set_line_needle_value(gauges[scr], needles[scr], TFT_WIDTH, (int32_t)value);
+        metersWork();
     }
 }
 

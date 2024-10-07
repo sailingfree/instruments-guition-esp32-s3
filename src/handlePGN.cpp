@@ -67,7 +67,7 @@ void updateTime() {
     }
 }
 
-// Function to return a String objcet formatted to a fixed number of decimal places
+// Function to return a String object formatted to a fixed number of decimal places
 String dpf(double val, int dp = 2) {
     String result(val, 2);
     return result;
@@ -146,12 +146,13 @@ void handlePGN(tN2kMsg& msg) {
             ws += "kts";
             setVlabel(SCR_NAV, ws);
             if(s && windAngle != N2kDoubleNA) {
-                setGauge(SCR_NAV, (int)RadToDeg(windAngle) + 180);
+                setGauge(SCR_NAV, (int)RadToDeg(windAngle));
                 setMeter(SCR_ENV, WINDANGLE, RadToDeg(windAngle), "°");
-                record["angle"] = (int)RadToDeg(windAngle) + 180;
+                record["angle"] = (int)RadToDeg(windAngle);
             }
             if(s && windSpeed != N2kDoubleNA) {
                 setMeter(SCR_ENV, WINDSP, msToKnots(windSpeed), "kts");
+                setMeter(SCR_NAV, NAV_WIND, msToKnots(windSpeed), "kts");
                 record["wind"] = dpf(msToKnots(windSpeed), 1);
             }
         } break;
@@ -164,11 +165,11 @@ void handlePGN(tN2kMsg& msg) {
             double sog;
             bool s = ParseN2kPGN129026(msg, instance, ref, hdg, sog);
             if(s && sog != N2kDoubleNA) {
-                setMeter(SCR_NAV, SOG, msToKnots(sog), "kts");
+                setMeter(SCR_NAV, NAV_SOG, msToKnots(sog), "kts");
                 record["sog"] = dpf(msToKnots(sog), 1);
             }
             if(s && hdg != N2kDoubleNA) {
-                setMeter(SCR_NAV, HDG, RadToDeg(hdg), "°");
+                setMeter(SCR_NAV, NAV_HDG, RadToDeg(hdg), "°");
                 record["cog"] = (int)RadToDeg(hdg);
             }
 
@@ -184,7 +185,7 @@ void handlePGN(tN2kMsg& msg) {
             double range;
             bool s = ParseN2kPGN128267(msg, instance, depth, offset, range);
             if(s && depth != N2kDoubleNA) {
-                setMeter(SCR_NAV, DEPTH, depth, "m");
+                setMeter(SCR_NAV, NAV_DEPTH, depth, "m");
                 record["depth"] = dpf(depth,1);
             }
         } break;
