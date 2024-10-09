@@ -506,10 +506,10 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     setupHeader(scr, screen, "Engine");
 
     // Create the indicator panels
-    ind[scr][HOUSEV] = new Indicator(screen, "House Voltage", COL1, ROW1);
-    ind[scr][HOUSEI] = new Indicator(screen, "House Current", COL2, ROW1);
-    ind[scr][ENGINEV] = new Indicator(screen, "Engine Voltage", COL1, ROW2);
-    ind[scr][ENGINETEMP] = new Indicator(screen, "Temp", COL1, ROW3);
+    ind[scr][ENG_HOUSEV] = new Indicator(screen, "House Voltage", COL1, ROW1);
+    ind[scr][ENG_HOUSEI] = new Indicator(screen, "House Current", COL2, ROW1);
+    ind[scr][ENG_ENGINEV] = new Indicator(screen, "Engine Voltage", COL1, ROW2);
+    ind[scr][ENG_TEMP] = new Indicator(screen, "Temp", COL1, ROW3);
 
     // Create a container for a gauge
     lv_obj_t* container = createContainer(screen);
@@ -685,12 +685,12 @@ static lv_obj_t* createGNSSScreen(Screens scr) {
     setupCommonstyles(screen);
     setupHeader(scr, screen, "GPS");
 
-    ind[scr][SATS] = new Indicator(screen, "Sats", COL1, ROW1);
-    ind[scr][HDOP] = new Indicator(screen, "HDOP", COL2, ROW1);
-    ind[scr][LAT] = new Indicator(screen, "LAT", COL1, ROW2);
-    ind[scr][LONG] = new Indicator(screen, "LON", COL2, ROW2);
-    ind[scr][TIME] = new Indicator(screen, "Time", COL1, ROW3);
-    ind[scr][ALT] = new Indicator(screen, "Altitude", COL2, ROW3);
+    ind[scr][GNSS_SATS] = new Indicator(screen, "Sats", COL1, ROW1);
+    ind[scr][GNSS_HDOP] = new Indicator(screen, "HDOP", COL2, ROW1);
+    ind[scr][GNSS_LAT] = new Indicator(screen, "LAT", COL1, ROW2);
+    ind[scr][GNSS_LONG] = new Indicator(screen, "LON", COL2, ROW2);
+    ind[scr][GNSS_TIME] = new Indicator(screen, "Time", COL1, ROW3);
+    ind[scr][GNSS_ALT] = new Indicator(screen, "Altitude", COL2, ROW3);
 
     setupMenu(screen);
     return screen;

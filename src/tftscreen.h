@@ -36,11 +36,11 @@ typedef enum {
 
 // Indicator indexes
 typedef enum {
-    HOUSEV = 0,
-    HOUSEI = 1,
-    ENGINEV = 2,
-    ENGINERPM = 3,
-    ENGINETEMP,
+    ENG_HOUSEV = 0,
+    ENG_HOUSEI = 1,
+    ENG_ENGINEV = 2,
+    ENG_RPM = 3,
+    ENG_TEMP,
 
     // Indexes for the nav info screen
     NAV_SOG = 0,
@@ -49,20 +49,20 @@ typedef enum {
     NAV_WIND =3,
 
     // Indexes for the GNSS screen
-    SATS = 0,
-    HDOP, 
-    LAT, 
-    LONG,
-    TIME,
-    ALT,
+    GNSS_SATS = 0,
+    GNSS_HDOP, 
+    GNSS_LAT, 
+    GNSS_LONG,
+    GNSS_TIME,
+    GNSS_ALT,
 
     // Environmental
-    AIRTEMP = 0,
-    HUM = 1,
-    PRESSURE = 2,
-    SEATEMP = 3,
-    WINDSP = 4,
-    WINDANGLE = 5,
+    ENV_AIRTEMP = 0,
+    GNSS_HUM = 1,
+    GNSS_PRESSURE = 2,
+    GNSS_SEATEMP = 3,
+    GNSS_ = 4,
+    GNSS_WINDANGLE = 5,
 
     // Trip
     TR_DISTANCE = 0,
