@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <myTime.h>
 #include <TripComputer.h>
 #include <esp32_smartdisplay.h>
+#include <movingAvgf.h>
 
 // Forward declarations
 static lv_obj_t* createEngineScreen(Screens screen);
@@ -194,7 +195,21 @@ Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y)
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, 0);
 
     lv_label_set_text(text, "---");
+
+    avg = new movingAvg(interval);
+    avg->begin();
 }
+
+// set the value using a double and precision. 
+// Uses the moving average to smooth the output
+void Indicator::setValue(double value, const char* units, uint32_t prec) {
+    // calcuate the moving average
+    avg->reading(value);
+    String v(avg->getAvg(), prec);
+    v += units;
+    setValue(v.c_str());
+}
+
 
 // Constructor. Binds to the parent object.
 // Info bar has the screen title and the time
@@ -760,11 +775,10 @@ void setMeter(Screens scr, MeterIdx idx, double value, const char* units) {
 }
 
 // Set the value of a meter using a double and set the precision
+// Uses the indicator's method which smooths the values
 void setMeter(Screens scr, MeterIdx idx, double value, const char* units, uint32_t prec) {
     if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
-        String v(value, prec);
-        v += units;
-        ind[scr][idx]->setValue(v.c_str());
+        ind[scr][idx]->setValue(value, units, prec);
     }
 }
 
