@@ -151,12 +151,12 @@ void handlePGN(tN2kMsg& msg) {
             setVlabel(SCR_NAV, ws);
             if(s && windAngle != N2kDoubleNA) {
                 setGauge(SCR_NAV, (int)RadToDeg(windAngle));
-                setMeter(SCR_ENV, GNSS_WINDANGLE, RadToDeg(windAngle), "°");
+                setMeter(SCR_ENV, GNSS_WINDANGLE, RadToDeg(windAngle), "°", 0U);
                 record["angle"] = (int)RadToDeg(windAngle);
             }
             if(s && windSpeed != N2kDoubleNA) {
-                setMeter(SCR_ENV, GNSS_, msToKnots(windSpeed), "kts");
-                setMeter(SCR_NAV, NAV_WIND, msToKnots(windSpeed), "kts");
+                setMeter(SCR_ENV, GNSS_, msToKnots(windSpeed), "kts", 0U);
+                setMeter(SCR_NAV, NAV_WIND, msToKnots(windSpeed), "kts", 0U);
                 tripComputer.updateWind(msToKnots(windSpeed));
                 record["wind"] = dpf(msToKnots(windSpeed), 1);
             }
@@ -170,12 +170,12 @@ void handlePGN(tN2kMsg& msg) {
             double sog;
             bool s = ParseN2kPGN129026(msg, instance, ref, hdg, sog);
             if(s && sog != N2kDoubleNA) {
-                setMeter(SCR_NAV, NAV_SOG, msToKnots(sog), "kts");
+                setMeter(SCR_NAV, NAV_SOG, msToKnots(sog), "kts", 1U);
                 tripComputer.updateSpeed(msToKnots(sog));
                 record["sog"] = dpf(msToKnots(sog), 1);
             }
             if(s && hdg != N2kDoubleNA) {
-                setMeter(SCR_NAV, NAV_HDG, RadToDeg(hdg), "°");
+                setMeter(SCR_NAV, NAV_HDG, RadToDeg(hdg), "°", 0U);
                 record["cog"] = (int)RadToDeg(hdg);
             }
 
@@ -276,7 +276,7 @@ void handlePGN(tN2kMsg& msg) {
             bool s = ParseN2kPGN130310(msg, instance, WaterTemperature, OutsideAmbientAirTemperature, AtmosphericPressure);
 
             if(s && WaterTemperature > 273.0) {
-                setMeter(SCR_ENV, GNSS_SEATEMP, KelvinToC(WaterTemperature), "°C");
+                setMeter(SCR_ENV, GNSS_SEATEMP, KelvinToC(WaterTemperature), "°C", 1U);
                 record["seatemp"] = dpf(KelvinToC(WaterTemperature),1);
             }
         } break;
@@ -292,7 +292,7 @@ void handlePGN(tN2kMsg& msg) {
             bool s = ParseN2kPGN130312(msg, instance, TempInstance, TempSource, ActualTemperature, SetTemperature);
 
             if(s && ActualTemperature != 0.01) {
-                setMeter(SCR_ENV, ENV_AIRTEMP, KelvinToC(ActualTemperature), "°C");
+                setMeter(SCR_ENV, ENV_AIRTEMP, KelvinToC(ActualTemperature), "°C", 1U);
                 record["airtemp"] = dpf(KelvinToC(ActualTemperature),1);
             }
         } break;
@@ -307,7 +307,7 @@ void handlePGN(tN2kMsg& msg) {
             bool s = ParseN2kPGN130313(msg, instance, HumidityInstance, HumiditySource, ActualHumidity);
 
             if(s && ActualHumidity != N2kDoubleNA) {
-                setMeter(SCR_ENV, GNSS_HUM, ActualHumidity, "%");
+                setMeter(SCR_ENV, GNSS_HUM, ActualHumidity, "%", 0U);
             }
         } break;
 
@@ -321,7 +321,7 @@ void handlePGN(tN2kMsg& msg) {
             bool s = ParseN2kPGN130314(msg, instance, PressureInstance, PressureSource, Pressure);
 
             if(s && Pressure != 0.01) {
-                setMeter(SCR_ENV, GNSS_PRESSURE, Pressure / 100, "");
+                setMeter(SCR_ENV, GNSS_PRESSURE, Pressure / 100, "", 1U);
                 record["pressure"]  = (int)Pressure / 100;
             }
         } break;
