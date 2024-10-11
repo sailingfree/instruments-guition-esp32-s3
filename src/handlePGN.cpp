@@ -41,6 +41,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <myTime.h>
 
+// Trip computer
+#include <TripComputer.h>
+extern TripComputer tripComputer;
+
 static  ESP32Time rtc;
 
 // Update the time displayed on the screen.
@@ -153,6 +157,7 @@ void handlePGN(tN2kMsg& msg) {
             if(s && windSpeed != N2kDoubleNA) {
                 setMeter(SCR_ENV, GNSS_, msToKnots(windSpeed), "kts");
                 setMeter(SCR_NAV, NAV_WIND, msToKnots(windSpeed), "kts");
+                tripComputer.updateWind(msToKnots(windSpeed));
                 record["wind"] = dpf(msToKnots(windSpeed), 1);
             }
         } break;
@@ -166,6 +171,7 @@ void handlePGN(tN2kMsg& msg) {
             bool s = ParseN2kPGN129026(msg, instance, ref, hdg, sog);
             if(s && sog != N2kDoubleNA) {
                 setMeter(SCR_NAV, NAV_SOG, msToKnots(sog), "kts");
+                tripComputer.updateSpeed(msToKnots(sog));
                 record["sog"] = dpf(msToKnots(sog), 1);
             }
             if(s && hdg != N2kDoubleNA) {
@@ -230,6 +236,7 @@ void handlePGN(tN2kMsg& msg) {
                 setMeter(SCR_GNSS, GNSS_HDOP, Hdop, "");
                 setMeter(SCR_GNSS, GNSS_LAT, Latitude,"", 6);
                 setMeter(SCR_GNSS, GNSS_LONG, Longitude, "", 6);
+                tripComputer.updatePosition(Latitude, Longitude);
 
                 record["lat"] = Latitude;
                 record["lon"] = Longitude;

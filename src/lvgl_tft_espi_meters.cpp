@@ -32,6 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sdcard.h>
 #include <myFonts.h>
 #include <myTime.h>
+#include <TripComputer.h>
 #include <esp32_smartdisplay.h>
 
 // Forward declarations
@@ -68,6 +69,9 @@ static lv_obj_t* textAreas[SCR_MAX];
 #define ROW3            (ROW2 + IND_HEIGHT)
 #define COL1            (0)
 #define COL2            (TFT_WIDTH / 2)
+
+// The trip computer
+TripComputer tripComputer;
 
 // Print some text to the boot info screen textarea
 void displayText(const char* str) {
@@ -139,6 +143,21 @@ static void refreshData(Screens scr) {
     }
     s.clear();
 }
+
+// calback for the trip computer
+void trip_timer_cb(lv_timer_t * timer)
+{   
+        tripComputer.updateTime();
+//        tripComputer.debug();
+
+        ind[SCR_TRIP][TR_DISTANCE]->setValue(tripComputer.trDistance());
+        ind[SCR_TRIP][TR_TIME]->setValue(tripComputer.trTime());
+        ind[SCR_TRIP][TR_AVGSPEED]->setValue(tripComputer.trAvgSpeed());
+        ind[SCR_TRIP][TR_MAXSPEED]->setValue(tripComputer.trMaxSpeed());
+        ind[SCR_TRIP][TR_AVGWIND]->setValue(tripComputer.trAvgWind());
+        ind[SCR_TRIP][TR_MAXWIND]->setValue(tripComputer.trMaxWind());
+}
+
 
 // Constructor. Binds to the parent object.
 Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y) {
@@ -294,7 +313,7 @@ void MenuBar::addButton(const char* label, Screens target) {
     lv_style_set_pad_all(&style, 10);
     //    lv_obj_remove_style_all(b);
     lv_obj_add_style(b, &style, 0);
-    lv_obj_add_event_cb(b, buttonHandler, LV_EVENT_ALL, (void*)target);
+    lv_obj_add_event_cb(b, buttonHandler, LV_EVENT_CLICKED, (void*)target);
 }
 
 // Add a button to a menu bar. The callback will change the screen to the target
@@ -329,7 +348,7 @@ void MenuBar::addActionButton(const char* label, void (*ptr)(lv_event_t * e)) {
     lv_style_set_pad_all(&style, 10);
     //    lv_obj_remove_style_all(b);
     lv_obj_add_style(b, &style, 0);
-    lv_obj_add_event_cb(b, ptr, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(b, ptr, LV_EVENT_CLICKED, NULL);
 }
 
 
@@ -400,47 +419,18 @@ static void setupHeader(Screens scr, lv_obj_t* screen, const char* title) {
     bar->setValue(title);
 }
 
-// Data for the trip computer.
-// gets cleared on startup
-uint32_t    trDistance;
-uint32_t    trTime;
-uint32_t    trMaxSpeed;
-uint32_t    trMaxWind;
-uint32_t    trAvgSpeed;
-uint32_t    trAvgWind;
-
-
+// callbacks for the buttons on the trip computer page
 static void resetTrip(lv_event_t * e) {
-    trDistance = trTime = trMaxSpeed = trMaxWind = trAvgSpeed = trAvgWind = 0;
+    tripComputer.resetTrip();
 }
 
-static void startTrip(lv_event_t *e) {
-
+static void startTrip(lv_event_t * e) {
+    tripComputer.startTrip();
 }
 
-static void pauseTrip(lv_event_t *e) {
-
+static void pauseTrip(lv_event_t * e) {
+    tripComputer.pauseTrip();
 }
-
-static void stopTrip(lv_event_t *e) {
-
-}
-
-// calback for the trip computer
-static void timer_cb(lv_timer_t * timer)
-{   
-    uint32_t size = (uint32_t) timer->user_data;
-    static time_t last = 0;
-    struct tm tm;
-    time_t now = time(NULL);
-    gmtime_r(&now, &tm);
-    if(tm.tm_sec > last) {
-        last = tm.tm_sec;
-        String v(trDistance);
-        ind[SCR_TRIP][TR_DISTANCE]->setValue(v.c_str());
-    }
-}
-
 
 // Screens for the trip computer
 static void setupTripMenu(lv_obj_t * screen) {
@@ -460,17 +450,16 @@ static lv_obj_t* createTripScreen(Screens scr) {
     setupCommonstyles(screen);
     setupHeader(scr, screen, "Trip");
 
-    ind[scr][TR_DISTANCE]   = new Indicator(screen, "Distance", COL1, ROW1);
+    ind[scr][TR_DISTANCE]   = new Indicator(screen, "Distance (nm)", COL1, ROW1);
     ind[scr][TR_TIME]       = new Indicator(screen, "Time", COL2, ROW1);
-    ind[scr][TR_AVGSPEED]   = new Indicator(screen, "Avg speed", COL1, ROW2);
-    ind[scr][TR_MAXSPEED]   = new Indicator(screen, "Max speed", COL2, ROW2);
-    ind[scr][TR_AVGWIND]    = new Indicator(screen, "Avg Wind", COL1, ROW3);
-    ind[scr][TR_MAXWIND]    = new Indicator(screen, "Max Wind", COL2, ROW3);
+    ind[scr][TR_AVGSPEED]   = new Indicator(screen, "Avg speed (kts)", COL1, ROW2);
+    ind[scr][TR_MAXSPEED]   = new Indicator(screen, "Max speed (kts)", COL2, ROW2);
+    ind[scr][TR_AVGWIND]    = new Indicator(screen, "Avg Wind (kts)", COL1, ROW3);
+    ind[scr][TR_MAXWIND]    = new Indicator(screen, "Max Wind (kts)", COL2, ROW3);
 
     setupTripMenu(screen);
 
-    lv_timer_t * timer = lv_timer_create(timer_cb, 1000, NULL);
-    lv_timer_ready(timer);
+    lv_timer_t * timer = lv_timer_create(trip_timer_cb, 1000, NULL);
 
     return screen;
 }
