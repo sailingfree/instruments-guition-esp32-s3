@@ -148,7 +148,6 @@ static void refreshData(Screens scr) {
 void trip_timer_cb(lv_timer_t * timer)
 {   
         tripComputer.updateTime();
-//        tripComputer.debug();
 
         ind[SCR_TRIP][TR_DISTANCE]->setValue(tripComputer.trDistance());
         ind[SCR_TRIP][TR_TIME]->setValue(tripComputer.trTime());
@@ -282,7 +281,6 @@ static void buttonHandler(lv_event_t* e) {
     lv_event_code_t code = lv_event_get_code(e);
 
     if (code == LV_EVENT_CLICKED) {
-        Serial.printf("Target is %d\n", s);
         if (s >= 0 && s < SCR_MAX && screen[s]) {
             refreshData(s);
             lv_scr_load(screen[s]);
@@ -739,7 +737,7 @@ static lv_obj_t* createInfoScreen(Screens scr, const char * title) {
     textAreas[scr] = lv_textarea_create(screen);
     lv_obj_set_size(textAreas[scr], TFT_WIDTH, TFT_HEIGHT - (2 * HEIGHT_INFO));
     lv_obj_align(textAreas[scr], LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_text_font(textAreas[scr], &RobotoCondensedVariableFont_wght16, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(textAreas[scr], &UbuntuMonoB16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     setupDataMenu(screen);
     return screen;

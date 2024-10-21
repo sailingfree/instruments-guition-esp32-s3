@@ -6,3 +6,6 @@ extern lv_font_t RobotoCondensedVariableFont_wght42;
 extern lv_font_t RobotoCondensedVariableFont_wght52;
 extern lv_font_t RobotoCondensedVariableFont_wght64;
 extern lv_font_t Anton64;
+extern lv_font_t RobotoMono_VariableFont_wght16;
+extern lv_font_t UbuntuMonoR16;
+extern lv_font_t UbuntuMonoB16;
