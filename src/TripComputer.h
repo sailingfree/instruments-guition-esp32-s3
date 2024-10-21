@@ -11,6 +11,7 @@ public:
     TripComputer();
 
 
+    void init();
     void resetTrip();
     void startTrip();
     void pauseTrip();
@@ -33,6 +34,7 @@ private:
     // gets cleared on startup
     uint32_t    distance;
     time_t      ttime;
+    time_t      startTime;
     uint32_t    maxSpeed;
     uint32_t    maxWind;
     uint32_t    avgSpeed;

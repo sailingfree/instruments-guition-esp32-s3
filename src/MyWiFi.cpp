@@ -140,7 +140,7 @@ void wifiCheck() {
     uint32_t wifi_retry = 0;
 
     if (hadconnection) {
-        while (WiFi.status() != WL_CONNECTED && wifi_retry < 5) {  // Connection lost, 5 tries to reconnect
+        while (WiFi.status() != WL_CONNECTED && wifi_retry < 2) {  // Connection lost, 2 tries to reconnect
             wifi_retry++;
             Console->println("WiFi not connected. Try to reconnect");
             disconnectWifi();

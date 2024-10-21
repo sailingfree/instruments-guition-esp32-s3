@@ -44,6 +44,12 @@ void GwPrefsInit() {
         Reg.push_back(GWHOST);
         Reg.push_back(GWPASS);
         Reg.push_back(GWSCREEN);
+        Reg.push_back(TRIP_DISTANCE);
+        Reg.push_back(TRIP_TIME);
+        Reg.push_back(TRIP_MAXSP);
+        Reg.push_back(TRIP_MAXWIND);
+        Reg.push_back(TRIP_AVGSP);
+        Reg.push_back(TRIP_AVGWIND);
         doneInit = true;
     }
 }
@@ -52,7 +58,7 @@ void GwPrint(Stream &s) {
     //   GwPrefsInit();
     s.printf("Preferences\n");
     for (String str : Reg) {
-        String val = GwGetVal(str.c_str());
+        String val = GwGetVal(str.c_str(), "---");
         s.printf("%s\t\t%s\n", str.c_str(), val.c_str());
     }
 }
@@ -89,6 +95,7 @@ String GwGetVal(const char *key, String defval) {
     return val;
 }
 
+
 String GwSetVal(const char *key, String newval) {
     // GwPrefsInit();
     String curval;
@@ -97,4 +104,8 @@ String GwSetVal(const char *key, String newval) {
     curval = shellPref.getString(key);
     shellPref.end();
     return curval;
+}
+
+void addKey(const char * key) {
+    Reg.push_back(key);
 }

@@ -29,6 +29,7 @@ String GwGetVal(const char *key, String defval = "---");
 void GwListRegs(Stream &s);
 bool isGwKey(String k);
 void GwPrint(Stream &s);
+void addKey(const char * key);
 
 // WiFi mode. Can be AP CL OFF
 #define WIFIMODE "wifi"
@@ -64,3 +65,12 @@ void GwPrint(Stream &s);
 
 // The last selected screen number
 #define GWSCREEN "screen"
+
+// Keys for remembering the trip values
+#define TRIP_DISTANCE "dist"
+#define TRIP_TIME     "time"
+#define TRIP_MAXSP    "maxsp"
+#define TRIP_MAXWIND  "maxwind"
+#define TRIP_AVGSP    "avgsp"
+#define TRIP_AVGWIND  "avgwind"
+

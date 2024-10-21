@@ -47,6 +47,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // PGN and time handler
 #include <handlePGN.h>
 
+// Trip computer
+#include <TripComputer.h>
+
+extern TripComputer tripComputer;
+
 // Define the console to output to serial at startup.
 // this can get changed later, eg in the gwshell.
 Stream *Console = &Serial;
@@ -69,6 +74,7 @@ void setup() {
     Serial.printf("SDK version: %s", ESP.getSdkVersion());
 
     adminSetup();          // Should be called first to setup preferences etc
+    tripComputer.init();
     metersSetup();         // Graphics setup
     displayText("Starting WiFi");
     wifiSetup(host_name);  // Conect to an AP for the YD data

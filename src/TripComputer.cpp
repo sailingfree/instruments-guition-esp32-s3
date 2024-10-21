@@ -1,15 +1,30 @@
 #include <Arduino.h>
 #include <TripComputer.h>
 #include <math.h>
+#include <GwPrefs.h>   // For storing values
+
+
 
 TripComputer::TripComputer() {
-    resetTrip();
+}
+
+// At startup read any existing values and use them
+// Must be called after prefs have been initialised
+void TripComputer::init() {
+    distance = GwGetVal(TRIP_DISTANCE).toInt();
+    startTime = GwGetVal(TRIP_TIME).toInt();
+    maxSpeed = GwGetVal(TRIP_MAXSP).toInt();
+    maxWind = GwGetVal(TRIP_MAXWIND).toInt();
+    avgSpeed = GwGetVal(TRIP_AVGSP).toInt();
+    avgWind = GwGetVal(TRIP_AVGWIND).toInt();
+    Serial.printf("STARTUP %d %ld %d %d\n", distance, ttime, maxSpeed, avgSpeed);
 }
 
 // Zero all counters and sums and values
 void TripComputer::resetTrip() {
     distance =
         ttime =
+        startTime = 
         maxSpeed =
         maxWind =
         avgSpeed =
@@ -43,8 +58,9 @@ void TripComputer::stopTrip() {
 void TripComputer::updateTime() {
     time_t now = millis();
     if (now > lastTimer + 1000) {
-        ttime = (lastTimer - timer) / 1000;
+        ttime = startTime + ((lastTimer - timer) / 1000);
         lastTimer = now;
+        GwSetVal(TRIP_TIME, String(ttime));
     }
 }
 
@@ -54,6 +70,7 @@ void TripComputer::updatePosition(double lat, double lon) {
         // This is going to be inaccurate due to nose etc
         double d = distance_between(lastLat, lastLon, lat, lon);
         distance += d;
+        GwSetVal(TRIP_DISTANCE, String(distance));
     }
     lastLat = lat;
     lastLon = lon;
@@ -64,8 +81,10 @@ void TripComputer::updateWind(double s) {
     sumWind += s;
     samplesWind++;
     avgWind = sumWind / samplesWind;
+    GwSetVal(TRIP_AVGWIND, String(avgWind));
     if (s > maxWind) {
         maxWind = (uint32_t)s;
+        GwSetVal(TRIP_MAXWIND, String(maxWind));
     }
 }
 
@@ -74,8 +93,10 @@ void TripComputer::updateSpeed(double s) {
     sumSpeed += s;
     samplesSpeed++;
     avgSpeed = sumSpeed / samplesSpeed;
+    GwSetVal(TRIP_AVGSP, String(avgSpeed));
     if (s > maxSpeed) {
         maxSpeed = (uint32_t)s;
+        GwSetVal(TRIP_MAXSP, String(maxSpeed));
     }
 }
 

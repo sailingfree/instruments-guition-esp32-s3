@@ -86,9 +86,7 @@ const char * decimalDegDMM(double angle) {
 
     fractional = modf(angle, &deg);
     mm = fractional * 60.0;
-    Serial.printf("D %.0lf M %lf MM %lf\n", deg, fractional, mm);
     snprintf(buf, len - 1, "%.0lf°%.3f", deg, mm);
-    Serial.printf("BUF %s\n", buf);
     return buf;
 }
 
