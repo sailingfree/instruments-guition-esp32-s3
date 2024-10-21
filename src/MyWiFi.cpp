@@ -59,6 +59,7 @@ Gw_WiFi_Mode wifiType = WiFi_AP;
 String WifiMode = "Unknown";
 String WifiSSID = "Unknown";
 String WifiIP = "Unknown";
+String WifiRSSI = "Unknown";
 
 // The UDP yacht data reader
 YDtoN2kUDP ydtoN2kUDP;
@@ -109,6 +110,7 @@ bool connectWifi() {
                 WifiMode = "Client";
                 WifiSSID = wifiCreds[i].ssid;
                 WifiIP = WiFi.localIP().toString();
+                WifiRSSI = WiFi.RSSI();
                 Console->printf("Connected to %s\n", wifiCreds[i].ssid.c_str());
                 hadconnection = true;
  //               setilabel(SCR_ENGINE, WifiIP);
@@ -169,7 +171,7 @@ void wifiSetup(String& host_name) {
     wifiCreds[1].pass = GwGetVal(SSPW2);
 
     while (!connectWifi() && --retries) {
-        sleep(1);
+        delay(100);
     }
 
     if (WiFi.status() != WL_CONNECTED) {

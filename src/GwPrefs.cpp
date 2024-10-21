@@ -54,12 +54,19 @@ void GwPrefsInit() {
     }
 }
 
+// Print the keys and values to the stream s
+// Does some basic tabulating making sure the output looks nice
 void GwPrint(Stream &s) {
-    //   GwPrefsInit();
+    static const int tablen = 16;   // Tab from left margin
     s.printf("Preferences\n");
     for (String str : Reg) {
+        int keylen = str.length();
+        s.printf("%s", str.c_str());
+        for(int i = 0; i < tablen - keylen; i++) {
+            s.printf(" ");
+        }   
         String val = GwGetVal(str.c_str(), "---");
-        s.printf("%s\t\t%s\n", str.c_str(), val.c_str());
+        s.printf("%s\n", val.c_str());
     }
 }
 
@@ -79,7 +86,7 @@ bool isGwKey(String key) {
 void GwListRegs(Stream &s) {
     //    GwPrefsInit();
     for (String str : Reg) {
-        s.printf("\t%s\n", str.c_str());
+        s.printf("      %s\n", str.c_str());
     }
 }
 

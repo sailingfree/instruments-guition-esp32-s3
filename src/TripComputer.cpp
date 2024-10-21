@@ -17,7 +17,6 @@ void TripComputer::init() {
     maxWind = GwGetVal(TRIP_MAXWIND).toInt();
     avgSpeed = GwGetVal(TRIP_AVGSP).toInt();
     avgWind = GwGetVal(TRIP_AVGWIND).toInt();
-    Serial.printf("STARTUP %d %ld %d %d\n", distance, ttime, maxSpeed, avgSpeed);
 }
 
 // Zero all counters and sums and values

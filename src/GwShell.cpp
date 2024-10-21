@@ -256,7 +256,7 @@ void initGwShell() {
     shell.addCommand(F("reboot \tReboot the ESP"), reboot);
     shell.addCommand(F("msgs \t\tShow the N2K message counts"), messages);
     shell.addCommand(F("dir \t\tList storage"), storage);
-    shell.addCommand(F("Format the SD card"), format);
+    shell.addCommand(F("fmt \t\tFormat the SD card"), format);
     shell.addCommand(F("cat \t\tRead the logfile"), catlog);
     shell.addCommand(F("rm \t\tDelete a file"), rmfile);
     shell.addCommand(F("df \t\tDisplays details of the storage"), df);

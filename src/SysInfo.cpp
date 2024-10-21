@@ -38,11 +38,12 @@ void getNetInfo(Stream &s) {
     //tcpip_adapter_sta_list_t adapter_sta_list;
 
     s.println("=========== NETWORK ==========");
-    s.printf("HOST NAME\t%s\n", host_name.c_str());
-    s.printf("MAC\t\t%s\n", macAddress.c_str());
-    s.printf("WifiMode\t%s\n", WifiMode.c_str());
-    s.printf("WifiIP\t\t%s\n", WifiIP.c_str());
-    s.printf("WifiSSID\t%s\n", WifiSSID.c_str());
+    s.printf("HOST NAME   %s\n", host_name.c_str());
+    s.printf("MAC         %s\n", macAddress.c_str());
+    s.printf("WifiMode    %s\n", WifiMode.c_str());
+    s.printf("WifiIP      %s\n", WifiIP.c_str());
+    s.printf("WifiSSID    %s\n", WifiSSID.c_str());
+    s.printf("WiFi RSSI   %s\n", WifiRSSI.c_str());
 
     s.println("=========== END ==========");
 }
@@ -66,18 +67,18 @@ void getSysInfo(Stream &s) {
     lv_mem_monitor_t mon;
 
     s.println("=========== SYSTEM ==========");
-    s.printf("Version\t\t%s\n", VERSION);
-    s.printf("Date\t\t%s\n", BUILD_TIMESTAMP);
-    s.printf("Model\t\t%s\n", Model.c_str());
-    s.printf("Uptime\t\t%s", uptime.c_str());
-    s.printf("Heap\t%d\n", heap);
-    s.printf("Heap Free\t%d\n", freeheap);
-    s.printf("Heap used\t%d%%\n", heapUsedPc);
-    s.printf("ChipRev\t\t%d\n", chiprev);
-    s.printf("Sketch\t\t%d\n", sketchSize);
-    s.printf("Sketch Free\t%d\n", freeSketch);
-    s.printf("Flash used\t%d%%\n", flashUsedPc);
-    s.printf("Efuse\t\t0x%llx\n", efuse);
+    s.printf("Version       %s\n", VERSION);
+    s.printf("Date          %s\n", BUILD_TIMESTAMP);
+    s.printf("Model         %s\n", Model.c_str());
+    s.printf("Uptime        %s\n", uptime.c_str());
+    s.printf("Heap          %d\n", heap);
+    s.printf("Heap Free     %d\n", freeheap);
+    s.printf("Heap used     %d%%\n", heapUsedPc);
+    s.printf("ChipRev       %d\n", chiprev);
+    s.printf("Sketch        %d\n", sketchSize);
+    s.printf("Sketch Free   %d\n", freeSketch);
+    s.printf("Flash used    %d%%\n", flashUsedPc);
+    s.printf("Efuse         0x%llx\n", efuse);
     lv_mem_monitor(&mon);
     s.printf("LVGL used: %6d (%3d %%), frag: %3d %%, biggest free: %6d\n",
                      (int)mon.total_size - mon.free_size, mon.used_pct, mon.frag_pct,
