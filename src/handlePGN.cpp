@@ -77,6 +77,21 @@ String dpf(double val, int dp = 2) {
     return result;
 }
 
+// Function to convert lat/lon in decimal degrees to DMM
+// Returns a reference to a static char string
+const char * decimalDegDMM(double angle) {
+    static const int len = 32;
+    static char buf[len];
+    double deg, fractional, mm;
+
+    fractional = modf(angle, &deg);
+    mm = fractional * 60.0;
+    Serial.printf("D %.0lf M %lf MM %lf\n", deg, fractional, mm);
+    snprintf(buf, len - 1, "%.0lf°%.3f", deg, mm);
+    Serial.printf("BUF %s\n", buf);
+    return buf;
+}
+
 void handlePGN(tN2kMsg& msg) {
    // Base object for logging
     JsonDocument doc;
@@ -236,6 +251,9 @@ void handlePGN(tN2kMsg& msg) {
                 setMeter(SCR_GNSS, GNSS_HDOP, Hdop, "");
                 setMeter(SCR_GNSS, GNSS_LAT, Latitude,"", 6);
                 setMeter(SCR_GNSS, GNSS_LONG, Longitude, "", 6);
+                setMeter(SCR_GNSS, GNSS_LAT_DEGS, decimalDegDMM(Latitude));
+                setMeter(SCR_GNSS, GNSS_LON_DEGS, decimalDegDMM(Longitude));
+
                 tripComputer.updatePosition(Latitude, Longitude);
 
                 record["lat"] = Latitude;

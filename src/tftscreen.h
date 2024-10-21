@@ -1,6 +1,5 @@
 #include <NMEA2000.h>
 #include <lvgl.h>
-#include <movingAvgf.h>
 
 // Define the expected min and max values for the GNSS SNR
 #define MIN_SNR 35
@@ -50,12 +49,12 @@ typedef enum {
     NAV_WIND =3,
 
     // Indexes for the GNSS screen
-    GNSS_SATS = 0,
-    GNSS_HDOP, 
+    GNSS_HDOP = 0, 
+    GNSS_TIME,
     GNSS_LAT, 
     GNSS_LONG,
-    GNSS_TIME,
-    GNSS_ALT,
+    GNSS_LAT_DEGS,
+    GNSS_LON_DEGS,
 
     // Environmental
     ENV_AIRTEMP = 0,
@@ -100,12 +99,17 @@ class Indicator {
     // Set the value of a meter using a double and set the precision
     void setValue(double value, const char* units, uint32_t prec);
     
+    //Change the main indicator font
+    void setFont(const lv_font_t *value);
 
     // private:
-    movingAvg * avg;        // moving average for smoothing the displays
     lv_obj_t *container;
     lv_obj_t *label;
     lv_obj_t *text;
+
+    lv_style_t text_style;
+    lv_style_t value_style;
+    lv_style_t style;
 
     // The interval used for moving averages
     static const int interval = 4;  

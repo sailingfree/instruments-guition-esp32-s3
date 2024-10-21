@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <myTime.h>
 #include <TripComputer.h>
 #include <esp32_smartdisplay.h>
-#include <movingAvgf.h>
 
 // Forward declarations
 static lv_obj_t* createEngineScreen(Screens screen);
@@ -162,10 +161,6 @@ void trip_timer_cb(lv_timer_t * timer)
 
 // Constructor. Binds to the parent object.
 Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y) {
-    static lv_style_t text_style;
-    static lv_style_t value_style;
-    static lv_style_t style;
-
     container = lv_obj_create(parent);
     lv_obj_set_pos(container, x, y);
     lv_obj_set_width(container, IND_WIDTH - (2 * padding));
@@ -195,17 +190,16 @@ Indicator::Indicator(lv_obj_t* parent, const char* name, uint32_t x, uint32_t y)
     lv_obj_set_style_text_align(text, LV_TEXT_ALIGN_CENTER, 0);
 
     lv_label_set_text(text, "---");
+}
 
-    avg = new movingAvg(interval);
-    avg->begin();
+// Change the text size
+void Indicator::setFont(const lv_font_t *value) {
+    lv_style_set_text_font(&value_style, value);
 }
 
 // set the value using a double and precision. 
-// Uses the moving average to smooth the output
 void Indicator::setValue(double value, const char* units, uint32_t prec) {
-    // calcuate the moving average
-    avg->reading(value);
-    String v(avg->getAvg(), prec);
+    String v(value, prec);
     v += units;
     setValue(v.c_str());
 }
@@ -689,12 +683,19 @@ static lv_obj_t* createGNSSScreen(Screens scr) {
     setupCommonstyles(screen);
     setupHeader(scr, screen, "GPS");
 
-    ind[scr][GNSS_SATS] = new Indicator(screen, "Sats", COL1, ROW1);
-    ind[scr][GNSS_HDOP] = new Indicator(screen, "HDOP", COL2, ROW1);
+    ind[scr][GNSS_HDOP] = new Indicator(screen, "HDOP", COL1, ROW1);
+    ind[scr][GNSS_TIME] = new Indicator(screen, "Time", COL2, ROW1);
     ind[scr][GNSS_LAT] = new Indicator(screen, "LAT", COL1, ROW2);
     ind[scr][GNSS_LONG] = new Indicator(screen, "LON", COL2, ROW2);
-    ind[scr][GNSS_TIME] = new Indicator(screen, "Time", COL1, ROW3);
-    ind[scr][GNSS_ALT] = new Indicator(screen, "Altitude", COL2, ROW3);
+    ind[scr][GNSS_LAT_DEGS] = new Indicator(screen, "LAT DD.MM", COL1, ROW3);
+    ind[scr][GNSS_LON_DEGS] = new Indicator(screen, "LON DD.MM", COL2, ROW3);
+
+    // Reduce the font size for the lat/lon
+    ind[scr][GNSS_LAT]->setFont(&RobotoCondensedVariableFont_wght52);
+    ind[scr][GNSS_LONG]->setFont(&RobotoCondensedVariableFont_wght52);
+    ind[scr][GNSS_LAT_DEGS]->setFont(&RobotoCondensedVariableFont_wght52);
+    ind[scr][GNSS_LON_DEGS]->setFont(&RobotoCondensedVariableFont_wght52);
+
 
     setupMenu(screen);
     return screen;
