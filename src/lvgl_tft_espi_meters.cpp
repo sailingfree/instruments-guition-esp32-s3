@@ -324,7 +324,8 @@ void MenuBar::addButton(const char* label, Screens target) {
 }
 
 // Add a button to a menu bar. The callback will change the screen to the target
-void MenuBar::addActionButton(const char* label, void (*ptr)(lv_event_t * e)) {
+// returns a pointer to the label object
+lv_obj_t *  MenuBar::addActionButton(const char* label, void (*ptr)(lv_event_t * e)) {
     lv_obj_t* b = lv_button_create(container);
     lv_obj_t* l = lv_label_create(b);
     lv_label_set_text(l, label);
@@ -356,6 +357,8 @@ void MenuBar::addActionButton(const char* label, void (*ptr)(lv_event_t * e)) {
     //    lv_obj_remove_style_all(b);
     lv_obj_add_style(b, &style, 0);
     lv_obj_add_event_cb(b, ptr, LV_EVENT_CLICKED, NULL);
+
+    return l;
 }
 
 
@@ -427,27 +430,31 @@ static void setupHeader(Screens scr, lv_obj_t* screen, const char* title) {
 }
 
 // callbacks for the buttons on the trip computer page
-static void resetTrip(lv_event_t * e) {
-    tripComputer.resetTrip();
+static void tripButton1(lv_event_t * e) {
+    tripComputer.tripButton1();
 }
 
-static void startTrip(lv_event_t * e) {
-    tripComputer.startTrip();
-}
-
-static void pauseTrip(lv_event_t * e) {
-    tripComputer.pauseTrip();
+static void tripButton2(lv_event_t * e) {
+    tripComputer.tripButton2();
 }
 
 // Screens for the trip computer
 static void setupTripMenu(lv_obj_t * screen) {
+    const char * label1 = tripComputer.button1();
+    const char * label2 = tripComputer.button2();
+    lv_obj_t *b1, *b2;
+
     MenuBar* menuBar = new MenuBar(screen, BAR_ROW_BOTTOM);
     menuBar->addButton("Home", SCR_ENGINE);
-    menuBar->addActionButton("Reset", resetTrip);
-    menuBar->addActionButton(">", startTrip);
-    menuBar->addActionButton("||", pauseTrip);
+    b1 = menuBar->addActionButton(label1, tripButton1);
+    b2 = menuBar->addActionButton(label2, tripButton2);
     menuBar->addButton("Data", SCR_NETWORK);
+
+    // save the buttons in the trip computer
+    tripComputer.b1 = b1;
+    tripComputer.b2 = b2;
 }
+
 static lv_obj_t* createTripScreen(Screens scr) {
 
     lv_obj_t* screen = lv_obj_create(NULL);

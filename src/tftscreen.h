@@ -135,7 +135,7 @@ class MenuBar {
     MenuBar(lv_obj_t * parent, uint32_t y);
 
     void addButton(const char * label, Screens target);
-    void addActionButton(const char * label, void (*ptr)(lv_event_t *));
+    lv_obj_t *  addActionButton(const char * label, void (*ptr)(lv_event_t *));
     lv_obj_t * container;
 };
 
