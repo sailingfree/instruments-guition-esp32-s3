@@ -473,8 +473,6 @@ static lv_obj_t* createTripScreen(Screens scr) {
 
     setupTripMenu(screen);
 
-    lv_timer_t * timer = lv_timer_create(trip_timer_cb, 1000, NULL);
-
     return screen;
 }
 
@@ -598,7 +596,7 @@ static lv_obj_t* createNavScreen(Screens scr) {
 
     ind[scr][NAV_SOG] = new Indicator(screen, "SOG", COL1, ROW1);
     ind[scr][NAV_DEPTH] = new Indicator(screen, "Depth", COL2, ROW1);
-    ind[scr][NAV_HDG] = new Indicator(screen, "HDG", COL1, ROW2);
+    ind[scr][NAV_COG] = new Indicator(screen, "COG", COL1, ROW2);
     ind[scr][NAV_WIND] = new Indicator(screen, "App Wind", COL1, ROW3);
 
     // Create a container for a gauge for the Wind
@@ -689,15 +687,13 @@ static lv_obj_t* createGNSSScreen(Screens scr) {
     setupHeader(scr, screen, "GPS");
 
     ind[scr][GNSS_HDOP] = new Indicator(screen, "HDOP", COL1, ROW1);
-    ind[scr][GNSS_TIME] = new Indicator(screen, "Time", COL2, ROW1);
-    ind[scr][GNSS_LAT] = new Indicator(screen, "LAT", COL1, ROW2);
-    ind[scr][GNSS_LONG] = new Indicator(screen, "LON", COL2, ROW2);
-    ind[scr][GNSS_LAT_DEGS] = new Indicator(screen, "LAT DD.MM", COL1, ROW3);
-    ind[scr][GNSS_LON_DEGS] = new Indicator(screen, "LON DD.MM", COL2, ROW3);
-
+    ind[scr][GNSS_SATS] = new Indicator(screen, "Satellites", COL2, ROW1);
+    ind[scr][GNSS_LAT_DEGS] = new Indicator(screen, "LAT DD.MM", COL1, ROW2);
+    ind[scr][GNSS_LON_DEGS] = new Indicator(screen, "LON DD.MM", COL2, ROW2);
+    ind[scr][GNSS_SOG] = new Indicator(screen, "SOG", COL1, ROW3);
+    ind[scr][GNSS_COG] = new Indicator(screen, "COG", COL2, ROW3);
+ 
     // Reduce the font size for the lat/lon
-    ind[scr][GNSS_LAT]->setFont(&RobotoCondensedVariableFont_wght52);
-    ind[scr][GNSS_LONG]->setFont(&RobotoCondensedVariableFont_wght52);
     ind[scr][GNSS_LAT_DEGS]->setFont(&RobotoCondensedVariableFont_wght52);
     ind[scr][GNSS_LON_DEGS]->setFont(&RobotoCondensedVariableFont_wght52);
 

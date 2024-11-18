@@ -67,7 +67,6 @@ void updateTime() {
     if(now > last) {
         last = now;
         snprintf(buf, 9, "%02d:%02d:%02d", (tm.tm_hour + hourAdjust) % 24, tm.tm_min, tm.tm_sec);
-        setMeter(SCR_GNSS, GNSS_TIME, buf);
     }
 }
 
@@ -164,11 +163,11 @@ void handlePGN(tN2kMsg& msg) {
             setVlabel(SCR_NAV, ws);
             if(s && windAngle != N2kDoubleNA) {
                 setGauge(SCR_NAV, (int)RadToDeg(windAngle));
-                setMeter(SCR_ENV, GNSS_WINDANGLE, RadToDeg(windAngle), "°", 0U);
+                setMeter(SCR_ENV, ENV_WINDANGLE, RadToDeg(windAngle), "°", 0U);
                 record["angle"] = (int)RadToDeg(windAngle);
             }
             if(s && windSpeed != N2kDoubleNA) {
-                setMeter(SCR_ENV, GNSS_, msToKnots(windSpeed), "kts", 0U);
+                setMeter(SCR_ENV, ENV_WINDSPEED, msToKnots(windSpeed), "kts", 0U);
                 setMeter(SCR_NAV, NAV_WIND, msToKnots(windSpeed), "kts", 0U);
                 tripComputer.updateWind(msToKnots(windSpeed));
                 record["wind"] = dpf(msToKnots(windSpeed), 1);
@@ -179,17 +178,19 @@ void handlePGN(tN2kMsg& msg) {
             // COG/SOG
             unsigned char instance;
             tN2kHeadingReference ref;
-            double hdg;
+            double cog;
             double sog;
-            bool s = ParseN2kPGN129026(msg, instance, ref, hdg, sog);
+            bool s = ParseN2kPGN129026(msg, instance, ref, cog, sog);
             if(s && sog != N2kDoubleNA) {
                 setMeter(SCR_NAV, NAV_SOG, msToKnots(sog), "kts", 1U);
+                setMeter(SCR_GNSS, GNSS_SOG, msToKnots(sog), "kts", 1U);
                 tripComputer.updateSpeed(msToKnots(sog));
                 record["sog"] = dpf(msToKnots(sog), 1);
             }
-            if(s && hdg != N2kDoubleNA) {
-                setMeter(SCR_NAV, NAV_HDG, RadToDeg(hdg), "°", 0U);
-                record["cog"] = (int)RadToDeg(hdg);
+            if(s && cog != N2kDoubleNA) {
+                setMeter(SCR_NAV, NAV_COG, RadToDeg(cog), "°", 0U);
+                setMeter(SCR_GNSS, GNSS_COG, RadToDeg(cog), "°", 0U);
+                record["cog"] = (int)RadToDeg(cog);
             }
 
  
@@ -246,12 +247,12 @@ void handlePGN(tN2kMsg& msg) {
 
                 String latStr(Latitude,5);
                 String lonStr(Longitude,5);
+                String sats(nSatellites);
                 setMeter(SCR_GNSS, GNSS_HDOP, Hdop, "");
-                setMeter(SCR_GNSS, GNSS_LAT, Latitude,"", 6);
-                setMeter(SCR_GNSS, GNSS_LONG, Longitude, "", 6);
+                setMeter(SCR_GNSS, GNSS_SATS, sats);
                 setMeter(SCR_GNSS, GNSS_LAT_DEGS, decimalDegDMM(Latitude));
                 setMeter(SCR_GNSS, GNSS_LON_DEGS, decimalDegDMM(Longitude));
-
+Serial.printf("SATS %d %s\n", nSatellites, sats.c_str());
                 tripComputer.updatePosition(Latitude, Longitude);
 
                 record["lat"] = Latitude;
@@ -259,8 +260,6 @@ void handlePGN(tN2kMsg& msg) {
                 record["time"] = buf;
                 record["days"] = DaysSince1970;
                 record["seconds"] = SecondsSinceMidnight;
-
-#define SECONDS_IN_DAY (60 * 60 * 24)
 
                 time_t now = (DaysSince1970 * SECONDS_IN_DAY) + SecondsSinceMidnight;
                 // now = 365 * 10 * SECONDS_IN_DAY;
@@ -292,7 +291,7 @@ void handlePGN(tN2kMsg& msg) {
             bool s = ParseN2kPGN130310(msg, instance, WaterTemperature, OutsideAmbientAirTemperature, AtmosphericPressure);
 
             if(s && WaterTemperature > 273.0) {
-                setMeter(SCR_ENV, GNSS_SEATEMP, KelvinToC(WaterTemperature), "°C", 1U);
+                setMeter(SCR_ENV, ENV_SEATEMP, KelvinToC(WaterTemperature), "°C", 1U);
                 record["seatemp"] = dpf(KelvinToC(WaterTemperature),1);
             }
         } break;
@@ -323,7 +322,7 @@ void handlePGN(tN2kMsg& msg) {
             bool s = ParseN2kPGN130313(msg, instance, HumidityInstance, HumiditySource, ActualHumidity);
 
             if(s && ActualHumidity != N2kDoubleNA) {
-                setMeter(SCR_ENV, GNSS_HUM, ActualHumidity, "%", 0U);
+                setMeter(SCR_ENV, ENV_HUM, ActualHumidity, "%", 0U);
             }
         } break;
 
@@ -337,7 +336,7 @@ void handlePGN(tN2kMsg& msg) {
             bool s = ParseN2kPGN130314(msg, instance, PressureInstance, PressureSource, Pressure);
 
             if(s && Pressure != 0.01) {
-                setMeter(SCR_ENV, GNSS_PRESSURE, Pressure / 100, "", 1U);
+                setMeter(SCR_ENV, ENV_PRESSURE, Pressure / 100, "", 1U);
                 record["pressure"]  = (int)Pressure / 100;
             }
         } break;

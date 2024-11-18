@@ -66,24 +66,24 @@ typedef enum {
     // Indexes for the nav info screen
     NAV_SOG = 0,
     NAV_DEPTH = 1,
-    NAV_HDG = 2,
+    NAV_COG = 2,
     NAV_WIND =3,
 
     // Indexes for the GNSS screen
     GNSS_HDOP = 0, 
-    GNSS_TIME,
-    GNSS_LAT, 
-    GNSS_LONG,
+    GNSS_SATS,
     GNSS_LAT_DEGS,
     GNSS_LON_DEGS,
+    GNSS_SOG,
+    GNSS_COG,
 
     // Environmental
     ENV_AIRTEMP = 0,
-    GNSS_HUM = 1,
-    GNSS_PRESSURE = 2,
-    GNSS_SEATEMP = 3,
-    GNSS_ = 4,
-    GNSS_WINDANGLE = 5,
+    ENV_HUM = 1,
+    ENV_PRESSURE = 2,
+    ENV_SEATEMP = 3,
+    ENV_WINDSPEED = 4,
+    ENV_WINDANGLE = 5,
 
     // Trip
     TR_DISTANCE = 0,
