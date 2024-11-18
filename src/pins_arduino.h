@@ -1,3 +1,6 @@
+// Local copy for the 4840 display so I can use the SD card
+
+
 #ifndef Pins_Arduino_h
 #define Pins_Arduino_h
 
