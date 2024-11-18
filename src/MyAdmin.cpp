@@ -30,7 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <MyWiFi.h>
 
 // Global objects and variables
-String host_name;
+String hostName;
 String Model = "Naiad Display 1";
 String macAddress;  // Make the mac address gloabal
 
@@ -57,9 +57,8 @@ void adminSetup(void) {
     // Initialise the preferences
     GwPrefsInit();
 
-    // Generate the hostname by appending the last two octets of the mac address to make it unique
-    String hname = GwGetVal(GWHOST, "n2kdisplay");
-    host_name = hname + String(chipid[4], HEX) + String(chipid[5], HEX);
+    // Get the hostname
+    hostName = GwGetVal(GWHOST, "n2kdisplay");
 
     // Init the shell
     initGwShell();

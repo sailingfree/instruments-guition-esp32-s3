@@ -77,7 +77,7 @@ void setup() {
     tripComputer.init();
     metersSetup();         // Graphics setup
     displayText("Starting WiFi");
-    wifiSetup(host_name);  // Conect to an AP for the YD data
+    wifiSetup(hostName);  // Conect to an AP for the YD data
     displayText("Starting web server");
     webServerSetup();      // remote management
     displayText("Web server started...");

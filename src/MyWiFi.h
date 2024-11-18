@@ -39,7 +39,7 @@ extern Stream* Console;
 // External declarations
 
 // Initialise the wifi network
-void wifiSetup(String& host_name);
+void wifiSetup(String& hostName);
 
 // Check its still connected and re-connect if not
 void wifiCheck(void);

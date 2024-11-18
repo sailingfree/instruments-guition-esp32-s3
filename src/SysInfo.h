@@ -27,7 +27,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 
 extern String WifiMode, WifiIP, WifiSSID, WifiRSSI;
-extern String host_name, macAddress;
+extern String hostName, macAddress;
 extern String Model;
 
 void getNetInfo(Stream& s);

@@ -265,7 +265,7 @@ void initGwShell() {
 
 // Print a prompt to the terminal
 void doPrompt() {
-    shell.printf("%s Ok>", host_name.c_str());
+    shell.printf("%s Ok>", hostName.c_str());
 }
 
 void setShellSource(Stream* telnetClient) {

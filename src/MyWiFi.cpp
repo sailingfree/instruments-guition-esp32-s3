@@ -154,7 +154,7 @@ void wifiCheck() {
 // WiFi setup.
 // Connect to a wifi AP which supplies the data we need.
 // Register services we use
-void wifiSetup(String& host_name) {
+void wifiSetup(String& hostName) {
     Serial.println("Starting WiFi manager task...");
     displayText("Starting WiFi...");
 
@@ -183,9 +183,9 @@ void wifiSetup(String& host_name) {
         Serial.print("Got IP: ");
         Serial.println(WiFi.localIP());
 
-        if (MDNS.begin(host_name.c_str())) {
+        if (MDNS.begin(hostName.c_str())) {
             Console->print("* MDNS responder started. Hostname -> ");
-            Console->println(host_name);
+            Console->println(hostName);
         }
         else {
             Console->printf("Failed to start the MDNS respondern");

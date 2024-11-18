@@ -26,7 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 
 extern String WifiMode, WifiIP, WifiSSID;
-extern String host_name, macAddress;
+extern String hostName, macAddress;
 
 void initGwShell();
 void setShellSource(Stream* stream);

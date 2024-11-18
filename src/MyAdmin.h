@@ -22,7 +22,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 
-extern String host_name;
+extern String hostName;
 
 void adminSetup();
 void adminWork();
