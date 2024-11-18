@@ -26,7 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <esp32_smartdisplay.h>
 #include <myFonts.h>
 #include <myTime.h>
-#include <tftscreen.h>
+#include <display.h>
 
 static lv_obj_t * scale;
 static lv_obj_t * minute_hand;

@@ -22,7 +22,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
-#include <tftscreen.h>
+#include <display.h>
 #include <StringStream.h>
 #include <sdcard.h>
 #include <SdFat.h>

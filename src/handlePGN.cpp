@@ -32,7 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <ArduinoJson.h>
 
 // Display handlers
-#include <tftscreen.h>
+#include <display.h>
 
 // Time handling library
 #include <ESP32Time.h>

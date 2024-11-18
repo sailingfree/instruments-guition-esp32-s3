@@ -29,7 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <StringStream.h>
 #include <YDtoN2KUDP.h>
 #include <handlePGN.h>
-#include <tftscreen.h>
+#include <display.h>
 
 #include <map>
 

@@ -26,7 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <StringStream.h>
 #include <SysInfo.h>
 #include <lvgl.h>
-#include <tftscreen.h>
+#include <display.h>
 #include <NMEA2000.h>
 #include <N2kMessages.h>
 #include <sdcard.h>

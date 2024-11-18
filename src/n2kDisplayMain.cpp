@@ -27,7 +27,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 // Display
-#include <tftscreen.h>
+#include <display.h>
 
 // WiFI handling
 #include <MyWiFi.h>

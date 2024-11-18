@@ -31,7 +31,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <SysInfo.h>
 #include <sdcard.h>
 #include <GwLogger.h>
-#include <tftscreen.h>
+#include <display.h>
 #include <map>
 
 static std::map<int, String> History;
