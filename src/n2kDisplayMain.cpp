@@ -98,5 +98,6 @@ void loop(void) {
     webServerWork();
     wifiCheck();
     updateTime();
+    checkAllIndicators();
     metersWork();
 }

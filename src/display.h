@@ -134,6 +134,11 @@ class Indicator {
 
     // The interval used for moving averages
     static const int interval = 4;  
+
+    // Time the value was last updated
+    // Used to invalidate the value if not seen for a while
+    // Time in milliseconds since boot
+    time_t lastUpdate;
 };
 
 // Class to implement a full width info text area. 
@@ -191,4 +196,7 @@ void setGNSSSky(uint32_t idx, double azimuth, double declination);
 // Clear the sky indicators
 void initGNSSSky(uint32_t);
 void initGNSSSignal(uint32_t);
+
+// Check all indicators for valid updates
+void checkAllIndicators();
 
