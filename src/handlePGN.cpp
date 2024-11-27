@@ -252,7 +252,6 @@ void handlePGN(tN2kMsg& msg) {
                 setMeter(SCR_GNSS, GNSS_SATS, sats);
                 setMeter(SCR_GNSS, GNSS_LAT_DEGS, decimalDegDMM(Latitude));
                 setMeter(SCR_GNSS, GNSS_LON_DEGS, decimalDegDMM(Longitude));
-Serial.printf("SATS %d %s\n", nSatellites, sats.c_str());
                 tripComputer.updatePosition(Latitude, Longitude);
 
                 record["lat"] = Latitude;
