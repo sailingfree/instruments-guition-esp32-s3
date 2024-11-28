@@ -748,10 +748,9 @@ static lv_obj_t* createClockScreen(Screens scr) {
 
 // Update the meters. Called regularly from the main loop/task
 void metersWork(void) {
-    static const uint32_t tick_delay = 50;
+    static const uint32_t tick_delay = 100;
     lv_task_handler(); /* let the GUI do its work */
     lv_tick_inc(tick_delay);
-    delay(tick_delay);
 }
 
 // Set the value of a meter using a double and precision of 2
@@ -770,7 +769,7 @@ void setMeter(Screens scr, MeterIdx idx, double value, const char* units, uint32
 void setGauge(Screens scr, double value) {
     if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
         lv_scale_set_line_needle_value(gauges[scr], needles[scr], TFT_WIDTH, (int32_t)value);
-        metersWork();
+//        metersWork();
     }
 }
 

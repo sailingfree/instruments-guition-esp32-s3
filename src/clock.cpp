@@ -35,15 +35,28 @@ static lv_obj_t * second_hand;
 static lv_point_precise_t minute_hand_points[2];
 static int32_t hour;
 static int32_t minute;
+static uint32_t clockDiameter;
 
 
-static void timer_cb(lv_timer_t * timer)
+// Update the time displayed on the screen.
+// Uses the internal system time which will have been updated
+// if the GPS has provided a clock.
+// Only update if the seconds have changed
+// Also adjusts for BST
+void updateTime()
 {   
-    uint32_t size = (uint32_t) timer->user_data;
+    const uint32_t bufsize = 64;
+    static char buf[bufsize];
     static time_t last = 0;
+    uint32_t size = clockDiameter;
     struct tm tm;
     time_t now = time(NULL);
     gmtime_r(&now, &tm);
+
+    uint32_t hourAdjust = 0;
+    if(isBST()) {
+        hourAdjust = 1;
+    }
 
     if(now > last) {
         last = now;   
@@ -55,8 +68,9 @@ static void timer_cb(lv_timer_t * timer)
         /* the scale will allocate the hour hand line points 
         Add 1900 to the year as the tm struct starts in 1900
         Add 1 to the month as the tm struct month starts at 0 for january
+        Also adjust for BST
         */
-        int hour = utcToGmt(tm.tm_hour, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+        int hour = utcToGmt(tm.tm_hour, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday) + hourAdjust;
 
         // The hour needs to be converted to 60/ths and minutes added
         uint32_t newHour = ((hour % 12) * 5) + (tm.tm_min / 12);
@@ -64,8 +78,9 @@ static void timer_cb(lv_timer_t * timer)
 
         lv_scale_set_line_needle_value(scale, second_hand, size / 2, tm.tm_sec);
 
-        static char buf[64];
-        snprintf(buf, 63, "%02d:%02d:%02d", (hour) % 24, tm.tm_min, tm.tm_sec);
+        snprintf(buf, bufsize - 1, "%02d:%02d:%02d", (hour) % 24, tm.tm_min, tm.tm_sec);
+
+        // Also update all the screen headers with the time
         updateClocks(buf);
     }
 }
@@ -75,6 +90,7 @@ static void timer_cb(lv_timer_t * timer)
  */
 void clockFace(lv_obj_t * parent, uint32_t size)
 {
+    clockDiameter = size;
     scale = lv_scale_create(parent);
 
     lv_obj_set_size(scale, size, size);
@@ -149,6 +165,4 @@ void clockFace(lv_obj_t * parent, uint32_t size)
 
     hour = 11;
     minute = 5;
-    lv_timer_t * timer = lv_timer_create(timer_cb, 1000, (void *) size);
-    lv_timer_ready(timer);
 }

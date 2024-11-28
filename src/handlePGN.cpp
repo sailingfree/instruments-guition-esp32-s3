@@ -47,29 +47,6 @@ extern TripComputer tripComputer;
 
 static  ESP32Time rtc;
 
-// Update the time displayed on the screen.
-// Uses the internal system time which will have been updated
-// if the GPS has provided a clock.
-// Only update if the seconds have changed
-// Also adjusts for BST
-void updateTime() {
-    static time_t last = 0;
-    struct tm tm;
-    char buf[10];
-    time_t now = time(NULL);
-    gmtime_r(&now, &tm);
-    uint32_t hourAdjust = 0;
-    if(isBST()) {
-        hourAdjust = 1;
-    }
-
-
-    if(now > last) {
-        last = now;
-        snprintf(buf, 9, "%02d:%02d:%02d", (tm.tm_hour + hourAdjust) % 24, tm.tm_min, tm.tm_sec);
-    }
-}
-
 // Function to return a String object formatted to a fixed number of decimal places
 String dpf(double val, int dp = 2) {
     String result(val, 2);
