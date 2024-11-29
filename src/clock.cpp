@@ -48,13 +48,15 @@ void updateTime() {
     static time_t last = 0;
     uint32_t size = clockDiameter;
     struct tm tm;
-    time_t now = time(NULL);
+    time_t now = millis() / 1000; //time(NULL);
 
-    if (now != last) {
+    if (now > last) {
+        time_t now_secs;
+        now_secs = time(NULL);
         last = now;
 
-        // Convert time to its parts
-        gmtime_r(&now, &tm);
+        // Convert system time to its parts
+        gmtime_r(&now_secs, &tm);
 
         // Work out any daylight saving offset
         uint32_t hourAdjust = 0;
