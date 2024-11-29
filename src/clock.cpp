@@ -28,44 +28,44 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <myTime.h>
 #include <display.h>
 
-static lv_obj_t * scale;
-static lv_obj_t * minute_hand;
-static lv_obj_t * hour_hand;
-static lv_obj_t * second_hand;
+static lv_obj_t* scale;
+static lv_obj_t* minute_hand;
+static lv_obj_t* hour_hand;
+static lv_obj_t* second_hand;
 static lv_point_precise_t minute_hand_points[2];
 static int32_t hour;
 static int32_t minute;
 static uint32_t clockDiameter;
-
 
 // Update the time displayed on the screen.
 // Uses the internal system time which will have been updated
 // if the GPS has provided a clock.
 // Only update if the seconds have changed
 // Also adjusts for BST
-void updateTime()
-{   
+void updateTime() {
     const uint32_t bufsize = 64;
     static char buf[bufsize];
     static time_t last = 0;
     uint32_t size = clockDiameter;
     struct tm tm;
     time_t now = time(NULL);
-    gmtime_r(&now, &tm);
 
-    uint32_t hourAdjust = 0;
-    if(isBST()) {
-        hourAdjust = 1;
-    }
+    if (now != last) {
+        last = now;
 
-    if(now > last) {
-        last = now;   
+        // Convert time to its parts
+        gmtime_r(&now, &tm);
+
+        // Work out any daylight saving offset
+        uint32_t hourAdjust = 0;
+        if (isBST()) {
+            hourAdjust = 1;
+        }
 
         /* the scale will store the minute hand line points in `minute_hand_points` */
         lv_scale_set_line_needle_value(scale, minute_hand, size / 2, tm.tm_min);
- 
 
-        /* the scale will allocate the hour hand line points 
+        /* the scale will allocate the hour hand line points
         Add 1900 to the year as the tm struct starts in 1900
         Add 1 to the month as the tm struct month starts at 0 for january
         Also adjust for BST
@@ -74,7 +74,7 @@ void updateTime()
 
         // The hour needs to be converted to 60/ths and minutes added
         uint32_t newHour = ((hour % 12) * 5) + (tm.tm_min / 12);
-        lv_scale_set_line_needle_value(scale, hour_hand, 2 * size / 6 , newHour);
+        lv_scale_set_line_needle_value(scale, hour_hand, 2 * size / 6, newHour);
 
         lv_scale_set_line_needle_value(scale, second_hand, size / 2, tm.tm_sec);
 
@@ -88,27 +88,26 @@ void updateTime()
 /**
  * A round scale with multiple needles, resembling a clock
  */
-void clockFace(lv_obj_t * parent, uint32_t size)
-{
+void clockFace(lv_obj_t* parent, uint32_t size) {
     clockDiameter = size;
     scale = lv_scale_create(parent);
 
     lv_obj_set_size(scale, size, size);
     lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
- 
+
     lv_obj_set_style_bg_opa(scale, LV_OPA_80, 0);
     lv_obj_set_style_bg_color(scale, lv_color_black(), 0);
     lv_obj_set_style_radius(scale, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_clip_corner(scale, true, 0);
     lv_obj_center(scale);
     lv_obj_align(scale, LV_ALIGN_CENTER, 0, 0);
- 
+
     lv_scale_set_label_show(scale, true);
- 
+
     lv_scale_set_total_tick_count(scale, 61);
     lv_scale_set_major_tick_every(scale, 5);
 
-    static const char * hour_ticks[] = {"12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", NULL};
+    static const char* hour_ticks[] = {"12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", NULL};
     lv_scale_set_text_src(scale, hour_ticks);
 
     static lv_style_t indicator_style;
@@ -120,7 +119,7 @@ void clockFace(lv_obj_t * parent, uint32_t size)
 
     /* Major tick properties */
     lv_style_set_line_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_length(&indicator_style, 16); /* tick length */
+    lv_style_set_length(&indicator_style, 16);    /* tick length */
     lv_style_set_line_width(&indicator_style, 2); /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
@@ -128,7 +127,7 @@ void clockFace(lv_obj_t * parent, uint32_t size)
     static lv_style_t minor_ticks_style;
     lv_style_init(&minor_ticks_style);
     lv_style_set_line_color(&minor_ticks_style, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_length(&minor_ticks_style, 12); /* tick length */
+    lv_style_set_length(&minor_ticks_style, 12);    /* tick length */
     lv_style_set_line_width(&minor_ticks_style, 4); /* tick width */
     lv_obj_add_style(scale, &minor_ticks_style, LV_PART_ITEMS);
 
@@ -143,7 +142,7 @@ void clockFace(lv_obj_t * parent, uint32_t size)
 
     lv_scale_set_angle_range(scale, 360);
     lv_scale_set_rotation(scale, 270);
- 
+
     minute_hand = lv_line_create(scale);
     lv_line_set_points_mutable(minute_hand, minute_hand_points, 2);
 

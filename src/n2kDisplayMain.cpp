@@ -92,12 +92,22 @@ void setup() {
 
 // loop calling the work functions
 void loop(void) {
-
+    // handle any console commands etc
     adminWork();
+
+    // Read YD messages and update the screens
     wifiWork();
     webServerWork();
+
+    // Check we are still connected and reconnect if not
     wifiCheck();
+
+    // Update the time on the screens
     updateTime();
+
+    // Invalidate any indicators that do not have up to date data
     checkAllIndicators();
+
+    // Update the actual screen if needed.
     metersWork();
 }
