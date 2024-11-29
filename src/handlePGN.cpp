@@ -205,6 +205,7 @@ void handlePGN(tN2kMsg& msg) {
             tN2kGNSStype ReferenceStationType;
             uint16_t ReferenceSationID;
             double AgeOfCorrection;
+            static bool hasSetTime = 0;
 
             bool s = ParseN2kPGN129029(msg, instance, DaysSince1970, SecondsSinceMidnight, Latitude,
                                        Longitude, Altitude, GNSStype, GNSSmethod, nSatellites, Hdop, PDOP, GeoidalSeparation,
@@ -242,8 +243,11 @@ void handlePGN(tN2kMsg& msg) {
                 // now += 26 * SECONDS_IN_DAY;
                 struct tm tm;
                 gmtime_r(&now, &tm);
-                // Update the system time
-                rtc.setTime(tm.tm_sec, tm.tm_min, tm.tm_hour, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+                // Update the system time every minute to keep local time in sync
+                if(!hasSetTime || tm.tm_sec == 0) {
+                    rtc.setTime(tm.tm_sec, tm.tm_min, tm.tm_hour, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+                    hasSetTime = true;
+                }
             }
         } break;
 
