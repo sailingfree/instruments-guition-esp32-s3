@@ -57,7 +57,7 @@ const uint8_t SD_CS_PIN = SS;
 const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 #endif  // SDCARD_SS_PIN
 
-#if SPI_DRIVER_SELECT == 2   // This is set in th eboard json file or platformio.ini
+#if SPI_DRIVER_SELECT == 2   // This is set in the board json file or platformio.ini
 // Use software SPI rather than hardware.
 // This allows easier setting the correct SPI pins, otherwise its 
 // a new class or hack the pins_arduino.h file which gets changed when the
