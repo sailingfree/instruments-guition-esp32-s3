@@ -30,3 +30,5 @@ void setup_logging(void);
 void append_log(const char * msg);
 void read_log(Stream & s);
 String & getLogname();
+// Create a file for testing
+void createLogFile(char *name, size_t len);

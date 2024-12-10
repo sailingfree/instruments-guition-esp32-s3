@@ -29,7 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <SysInfo.h>
 
 // HTML strings
-#include <html/style.html>  // Must come before the content files
+#include <html/style.html> // Must come before the content files
 #include <html/index.html>
 #include <html/login.html>
 
@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * \return Extracted year [1980,2107]
  */
 static inline uint16_t FAT_YEAR(uint16_t fatDate) {
-  return 1980 + (fatDate >> 9);
+    return 1980 + (fatDate >> 9);
 }
 /** month part of FAT directory date field
  * \param[in] fatDate Date in packed dir format.
@@ -47,7 +47,7 @@ static inline uint16_t FAT_YEAR(uint16_t fatDate) {
  * \return Extracted month [1,12]
  */
 static inline uint8_t FAT_MONTH(uint16_t fatDate) {
-  return (fatDate >> 5) & 0XF;
+    return (fatDate >> 5) & 0XF;
 }
 /** day part of FAT directory date field
  * \param[in] fatDate Date in packed dir format.
@@ -55,7 +55,7 @@ static inline uint8_t FAT_MONTH(uint16_t fatDate) {
  * \return Extracted day [1,31]
  */
 static inline uint8_t FAT_DAY(uint16_t fatDate) {
-  return fatDate & 0X1F;
+    return fatDate & 0X1F;
 }
 
 /** hour part of FAT directory time field
@@ -64,7 +64,7 @@ static inline uint8_t FAT_DAY(uint16_t fatDate) {
  * \return Extracted hour [0,23]
  */
 static inline uint8_t FAT_HOUR(uint16_t fatTime) {
-  return fatTime >> 11;
+    return fatTime >> 11;
 }
 /** minute part of FAT directory time field
  * \param[in] fatTime Time in packed dir format.
@@ -107,7 +107,7 @@ public:
 
     bool canHandle(HTTPMethod requestMethod, String uri) override {
         bool result = false;
-        
+
         if((requestMethod != HTTP_GET))  {
             return false;
         }
@@ -127,25 +127,38 @@ public:
             server.send(404, "text/html", "No such file");
             return false;
         } else {
-        //    server.setContentLength(file.dataLength());
+            //    server.setContentLength(file.dataLength());
             server.sendHeader("Content-Type", "text/html");
             server.send(200, "text/html", "");
             server.sendHeader("Connection", "close");
-                    
+
             uint32_t count =0;
             int c;
             do {
-                c = file.readBytes(buf, bsize);  
-                server.sendContent(buf, c); 
+                c = file.readBytes(buf, bsize);
+                server.sendContent(buf, c);
                 count += c;
             } while (c);
             file.close();
 
-         //   server.send(200);
+            //   server.send(200);
             return true;
         }
     }
 };
+
+// List the request headers
+void listHeaders()
+{
+    int nheaders = server.headers();
+    Serial.printf("There are %d headers\n", nheaders);
+    for (int h = 0; h < nheaders; h++)
+    {
+        String name = server.headerName(h);
+        String val = server.header(h);
+        Serial.printf("Header %d %s=%s\n", h, name.c_str(), val.c_str());
+    }
+}
 
 // Web server
 void webServerSetup(void) {
@@ -156,7 +169,7 @@ void webServerSetup(void) {
 
         server.addHandler(new uriHandler());
 
-         // This works for a POST with a content encoding of text/plain though application/json also appears to work
+        // This works for a POST with a content encoding of text/plain though application/json also appears to work
         // The result ends up in a header called plain.
         // The file to write to is on the command line as ?file=filename
         server.on("/", HTTP_POST, []() {
@@ -194,6 +207,7 @@ void webServerSetup(void) {
         );
 
         server.on("/", HTTP_GET, []() {
+            listHeaders();
             server.send(200, "text/html", style + 
                                             head_html + 
                                             index_html + 
@@ -202,7 +216,8 @@ void webServerSetup(void) {
             server.sendHeader("Connection", "close");
             });
 
-        server.on("/system", HTTP_GET, []() {
+        server.on("/system", HTTP_GET, [](){
+            listHeaders();
             StringStream net, sys, msgs;
             getNetInfo(net);
             getSysInfo(sys);
@@ -221,7 +236,8 @@ void webServerSetup(void) {
             });
 
         // Handle listing the sd card
-        server.on("/dir", HTTP_GET, [] () {
+        server.on("/dir", HTTP_GET, []() {
+            listHeaders();
             // Read the directory into a string
             StringStream stream;
             String filelist;
@@ -274,6 +290,7 @@ void webServerSetup(void) {
 
         // Handle downloading a logfile
         server.on("/download", HTTP_GET, []() {
+            listHeaders();
             // Default logfile is the current one
             String logname("logfile.txt");
 
@@ -304,7 +321,7 @@ void webServerSetup(void) {
                     Serial.printf("Cannot allocate %d bytes for download\n", 8192);
                 }
                 else {
-                    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+                    server.setContentLength(filesize);
                     server.sendHeader("Content-Type", "application/octet-stream");
                     server.sendHeader("Content-Disposition", "attachment; filename=" + logname);
                     server.send(200, "application/octet-stream", "");
@@ -329,8 +346,8 @@ void webServerSetup(void) {
             server.sendHeader("Connection", "close");
             });
 
-                    delay(10);
-                    server.begin();
+        delay(10);
+        server.begin();
     }
 }
 

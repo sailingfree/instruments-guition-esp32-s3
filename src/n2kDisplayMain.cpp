@@ -85,6 +85,7 @@ void setup() {
     sdcard_setup();
     displayText("Starting logging");
     setup_logging();
+//    createLogFile("testlog.txt", 1024 * 1024 * 10);
     // Finally load the first working screen
     loadScreen();
     Serial.println("Setup done...");
