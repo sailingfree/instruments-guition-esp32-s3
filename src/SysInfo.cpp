@@ -31,6 +31,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "uptime_formatter.h"
 #include <Version.h>
+#include <uptime.h>
 
 // Format the network information and send to the configured stream
 void getNetInfo(Stream &s) {
@@ -91,17 +92,24 @@ void getSysInfo(Stream &s) {
 // Get the N2k messages and their counts and send to the configured output stream.
 extern std::map<int, int> N2kMsgMap;
 void getN2kMsgs(Stream &s) {
+    uptime::calculateUptime();
+    ulong uptimeSeconds = uptime::getSeconds() + (uptime::getMinutes() * 60) + (uptime::getHours() * 60 * 60) + (uptime::getDays() * 60 * 60 * 24);
     std::map<int, int>::iterator it = N2kMsgMap.begin();
+    int total = 0;
 
     s.println("======== N2K Messages ====");
     // Fixed width positions - tabs dont work in the display!
     // PGN=8 chars
     // Count=6
+    // msgs/sec 8
     // Function=remainder
-    s.printf("PGN     Count  Function\n");
+    s.printf("Uptime %ld seconds\n", uptimeSeconds);
+    s.printf("PGN     Count  msgs/sec Function\n");
 
     while (it != N2kMsgMap.end()) {
         const char *name = "unknown";
+        float msgsPerSec = 0.0;
+
         switch (it->first) {
             case 127488:
                 name = "Engine Rapid";
@@ -161,8 +169,14 @@ void getN2kMsgs(Stream &s) {
                 name = "GNSS Sats in view";
                 break;
         }
-        s.printf("%6d  %6d   %s\n", it->first, it->second, name);
+        if(uptimeSeconds > 0) {
+            msgsPerSec = ((it->second * 100.0 ) / uptimeSeconds) / 100.0;
+        }
+
+        s.printf("%6d  %6d   %8.2f  %s\n", it->first, it->second, msgsPerSec, name);
+        total += it->second;
         it++;
     }
+    s.printf("Total messages: %d\n", total);
     s.println("=========== END ==========");
 }
