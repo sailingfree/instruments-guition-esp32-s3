@@ -510,7 +510,7 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     // Meter for the RPM
     lv_obj_t* scale = lv_scale_create(container);
 
-    lv_obj_set_size(scale, (TFT_WIDTH / 2) - (2 * padding) - (2 * border), (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
+    lv_obj_set_size(scale, (METER_RADIUS * 2) - (2 * padding) - (2 * border), (METER_RADIUS * 2) - (2 * padding) - (2 * border));
     lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
     lv_obj_set_style_bg_opa(scale, LV_OPA_80, 0);
     lv_obj_set_style_bg_color(scale, lv_color_black(), 0);
@@ -527,7 +527,7 @@ static lv_obj_t* createEngineScreen(Screens scr) {
 
     /* Major tick properties */
     lv_style_set_line_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_length(&indicator_style, 8);     /* tick length */
+    lv_style_set_length(&indicator_style, METER_TICK_LENGTH);     /* tick length */
     lv_style_set_line_width(&indicator_style, 2); /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
@@ -555,7 +555,7 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     lv_obj_set_style_line_width(needle, 5, 0);
     lv_obj_set_style_line_rounded(needle, true, 0);
     lv_obj_set_style_line_color(needle, lv_palette_main(LV_PALETTE_RED), 0);
-    lv_scale_set_line_needle_value(scale, needle, 50, 10);
+
 
     // Label in the dial
     const char* lab = "RPM x100";
@@ -571,6 +571,8 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     // Save the scale line and image for updates
     gauges[scr] = scale;
     needles[scr] = needle;
+
+    setGauge(scr, 10);
 
     setupMenu(screen);
 
@@ -628,7 +630,7 @@ static lv_obj_t* createNavScreen(Screens scr) {
 
     /* Major tick properties */
     lv_style_set_line_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_length(&indicator_style, 8);     /* tick length */
+    lv_style_set_length(&indicator_style, METER_TICK_LENGTH);     /* tick length */
     lv_style_set_line_width(&indicator_style, 2); /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
@@ -661,6 +663,8 @@ static lv_obj_t* createNavScreen(Screens scr) {
     // Save the scale line and image for updates
     gauges[scr] = scale;
     needles[scr] = needle;
+
+    setGauge(scr, 0);
 
     setupMenu(screen);
 
@@ -767,8 +771,9 @@ void setMeter(Screens scr, MeterIdx idx, double value, const char* units, uint32
 }
 
 void setGauge(Screens scr, double value) {
+    static const int needleLength = METER_RADIUS - METER_TICK_LENGTH - 24;  // 24 is the font size for the meters
     if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
-        lv_scale_set_line_needle_value(gauges[scr], needles[scr], TFT_WIDTH, (int32_t)value);
+        lv_scale_set_line_needle_value(gauges[scr], needles[scr], needleLength, (int32_t)value);
 //        metersWork();
     }
 }

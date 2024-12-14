@@ -26,8 +26,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MIN_SNR 35
 #define MAX_SNR 50
 
-#define HEIGH_IND   (TFT_HEIGHT/4)
-#define HEIGHT_INFO (TFT_HEIGHT/8)
+#define HEIGH_IND           (TFT_HEIGHT/4)
+#define HEIGHT_INFO         (TFT_HEIGHT/8)
+#define METER_RADIUS        (TFT_WIDTH/4)
+#define METER_TICK_LENGTH   (8)
+
 
 // Define the screens. This is the ordfer they are in at startup
 typedef enum {
