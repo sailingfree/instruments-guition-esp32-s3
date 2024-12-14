@@ -69,7 +69,7 @@ SoftSpiDriver<SDFAT_SPI_MISO, SDFAT_SPI_MOSI, SDFAT_SPI_SCK> softSpi;
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(10), &softSpi)
 #else
 // Select the best SD card configuration.
-#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(50))
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(40))
 
 #endif
 

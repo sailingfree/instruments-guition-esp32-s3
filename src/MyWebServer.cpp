@@ -315,10 +315,10 @@ void webServerSetup(void) {
                 Serial.printf("Opened... %d bytes\n", filesize);
 
                 char* buf;
-                const size_t bsize = 8192;
+                const size_t bsize = 8192U;
                 buf = (char*)malloc(bsize);
                 if (!buf) {
-                    Serial.printf("Cannot allocate %d bytes for download\n", 8192);
+                    Serial.printf("Cannot allocate %d bytes for download\n", bsize);
                 }
                 else {
                     server.setContentLength(filesize);
