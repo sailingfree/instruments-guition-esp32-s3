@@ -22,18 +22,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <Arduino.h>
 #include <TripComputer.h>
 #include <math.h>
-#include <GwPrefs.h>   // For storing values
-
+#include <GwPrefs.h>  // For storing values
+#include <display.h>
 
 extern TripComputer tripComputer;
 
 // Button labels for each state
 static const char* labels[TripComputer::ST_MAX][2] = {
-                                            {"Start", "Reset"},
-                                            {"Pause", "Stop"},
-                                            {"Resume", "Stop"}
-};
-
+    {"Start", "Reset"},
+    {"Pause", "Stop"},
+    {"Resume", "Stop"}};
 
 TripComputer::TripComputer() {
     state = ST_STOPPED;
@@ -50,6 +48,22 @@ void TripComputer::init() {
     avgWind = GwGetVal(TRIP_AVGWIND).toInt();
 }
 
+const char * TripComputer::getState() {
+    const char * result = "Unknown";
+    switch(state) {
+        case ST_STOPPED:
+        result = "Stopped";
+        break;
+        case ST_PAUSED:
+        result = "Paused";
+        break;
+        case ST_RUNNING:
+        result = "Running";
+        break;
+    }
+    return result;
+}
+
 
 void TripComputer::updateLabels(const char* l1, const char* l2) {
     lv_label_set_text(b1, l1);
@@ -57,94 +71,105 @@ void TripComputer::updateLabels(const char* l1, const char* l2) {
 }
 
 void TripComputer::tripButton1() {
-    TripState newstate;
-    switch (state) {
-    case ST_STOPPED:
-        newstate = ST_RUNNING;
-        break;
-    case ST_RUNNING:
-        newstate = ST_PAUSED;
-        break;
-    case ST_PAUSED:
-        newstate = ST_RUNNING;
-        break;
-    default:
-        newstate = ST_STOPPED;
-        break;
+    if (debounceClick(500)) {
+        TripState newstate;
+        switch (state) {
+            case ST_STOPPED:
+                newstate = ST_RUNNING;
+                break;
+            case ST_RUNNING:
+                newstate = ST_PAUSED;
+                break;
+            case ST_PAUSED:
+                newstate = ST_RUNNING;
+                break;
+            default:
+                newstate = ST_STOPPED;
+                break;
+        }
+        Serial.printf("B1 state %d new state %d\n", state, newstate);
+        state = newstate;
+        updateLabels(labels[newstate][0], labels[newstate][1]);
     }
-    Serial.printf("B1 state %d new state %d\n", state, newstate);
-    state = newstate;
-    updateLabels(labels[newstate][0], labels[newstate][1]);
 }
 
 // Zero all counters and sums and values
 void TripComputer::resetTrip() {
     distance =
         ttime =
-        startTime =
-        maxSpeed =
-        maxWind =
-        avgSpeed =
-        avgWind = 0;
+            startTime =
+                maxSpeed =
+                    maxWind =
+                        avgSpeed =
+                            avgWind = 0;
 
     lastLat =
         lastLon = 0.0;
 
-    timer = lastTimer = millis(); // millis not affected by time chanegs eg from GNSS
+    timer = lastTimer = millis();  // millis not affected by time chanegs eg from GNSS
 
     samplesSpeed = samplesWind = 0;
 
     sumSpeed = sumWind = 0.0;
+
+    GwSetVal(TRIP_DISTANCE, String(distance));
+    GwSetVal(TRIP_TIME, String(startTime));
+    GwSetVal(TRIP_MAXSP, String(maxSpeed));
+    GwSetVal(TRIP_MAXWIND, String(maxWind));
+    GwSetVal(TRIP_AVGSP, String(avgSpeed));
+    GwSetVal(TRIP_AVGWIND, String(avgWind));
 }
 
-static void event_cb(lv_event_t * e)
-{
-    lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-    lv_obj_t * label = lv_obj_get_child(btn, 0);
-    lv_obj_t * mbox = (lv_obj_t *) lv_event_get_user_data(e);
-    LV_UNUSED(label);
-    Serial.printf("Button %s clicked", lv_label_get_text(label));
-    if(strcmp(lv_label_get_text(label), "Yes") == 0) {
-        tripComputer.resetTrip();
+
+static void event_cb(lv_event_t* e) {
+    if (debounceClick(CLICK_DEBOUNCE)) {
+        lv_obj_t* btn = (lv_obj_t*)lv_event_get_target(e);
+        lv_obj_t* label = lv_obj_get_child(btn, 0);
+        lv_obj_t* mbox = (lv_obj_t*)lv_event_get_user_data(e);
+        LV_UNUSED(label);
+        Serial.printf("Button %s clicked", lv_label_get_text(label));
+        if (strcmp(lv_label_get_text(label), "Yes") == 0) {
+            tripComputer.resetTrip();
+        }
+        lv_msgbox_close(mbox);
     }
-    lv_msgbox_close(mbox);
 }
 
 void TripComputer::tripButton2() {
-    TripState newstate;
-    switch (state) {
-    case ST_STOPPED:
-    {
-        newstate = ST_STOPPED;
-        // Do the reset stuff here
-        lv_obj_t* mbox1 = lv_msgbox_create(NULL);
-        lv_obj_t* btn;
-        lv_msgbox_add_title(mbox1, "Reset - Confirm");
-        lv_msgbox_add_text(mbox1, "This will erase the current Trip data");
-        lv_msgbox_add_text(mbox1, "Are you sure?");
-        btn = lv_msgbox_add_footer_button(mbox1, "Yes");
-        lv_obj_add_event_cb(btn, event_cb, LV_EVENT_CLICKED, mbox1);
-        btn = lv_msgbox_add_footer_button(mbox1, "Cancel");
-        lv_obj_add_event_cb(btn, event_cb, LV_EVENT_CLICKED, mbox1);
+    if (debounceClick(500)) {
+        TripState newstate;
+        switch (state) {
+            case ST_STOPPED: {
+                newstate = ST_STOPPED;
+                // Do the reset stuff here
+                lv_obj_t* mbox1 = lv_msgbox_create(NULL);
+                lv_obj_t* btn;
+                lv_msgbox_add_title(mbox1, "Reset - Confirm");
+                lv_msgbox_add_text(mbox1, "This will erase the current Trip data");
+                lv_msgbox_add_text(mbox1, "Are you sure?");
+                btn = lv_msgbox_add_footer_button(mbox1, "Yes");
+                lv_obj_add_event_cb(btn, event_cb, LV_EVENT_RELEASED, mbox1);
+                btn = lv_msgbox_add_footer_button(mbox1, "Cancel");
+                lv_obj_add_event_cb(btn, event_cb, LV_EVENT_RELEASED, mbox1);
+            } break;
+            case ST_RUNNING:
+                newstate = ST_STOPPED;
+                break;
+            case ST_PAUSED:
+                newstate = ST_STOPPED;
+                break;
+            default:
+                newstate = ST_STOPPED;
+                break;
+        }
+        Serial.printf("B1 state %d new state %d\n", state, newstate);
+        state = newstate;
+        updateLabels(labels[newstate][0], labels[newstate][1]);
     }
-        break;
-    case ST_RUNNING:
-        newstate = ST_STOPPED;
-        break;
-    case ST_PAUSED:
-        newstate = ST_STOPPED;
-        break;
-    default:
-        newstate = ST_STOPPED;
-        break;
-    }
-    Serial.printf("B1 state %d new state %d\n", state, newstate);
-    state = newstate;
-    updateLabels(labels[newstate][0], labels[newstate][1]);
 }
 
 // Called regularly.
-// Calculate how many seconds have elapsed sine the last call 
+// Calculate how many seconds have elapsed sine the last call
 // and update the timer.
 void TripComputer::updateTime() {
     if (state != ST_RUNNING) {
@@ -223,20 +248,20 @@ const char* TripComputer::trDistance() {
     return dbuf;
 }
 
-// return the time in HH:MM:SS 
+// return the time in HH:MM:SS
 const char* TripComputer::trTime() {
     static char tbuf[len];
     struct tm tm;
     gmtime_r(&ttime, &tm);
     snprintf(tbuf, len - 1, "%02d:%02d:%02d",
-        tm.tm_hour, tm.tm_min, tm.tm_sec);
+             tm.tm_hour, tm.tm_min, tm.tm_sec);
     return tbuf;
 }
 
 // Calculate the distance between two points.
 float TripComputer::distance_between(float lat1, float long1, float lat2, float long2) {
-    // returns distance in meters between two positions, both specified 
-    // as signed decimal-degrees latitude and longitude. Uses great-circle 
+    // returns distance in meters between two positions, both specified
+    // as signed decimal-degrees latitude and longitude. Uses great-circle
     // distance computation for hypothetical sphere of radius 6372795 meters.
     // Because Earth is no exact sphere, rounding errors may be up to 0.5%.
     // Courtesy of Maarten Lamers
@@ -282,17 +307,16 @@ const char* TripComputer::trAvgWind() {
     return awbuf;
 }
 
-
 const char* TripComputer::button1() {
     const char* result = "";
     switch (state) {
-    case ST_STOPPED:
-    case ST_PAUSED:
-    case ST_RUNNING:
-        result = labels[state][0];
-        break;
-    default:
-        break;
+        case ST_STOPPED:
+        case ST_PAUSED:
+        case ST_RUNNING:
+            result = labels[state][0];
+            break;
+        default:
+            break;
     }
     return result;
 }
@@ -300,13 +324,13 @@ const char* TripComputer::button1() {
 const char* TripComputer::button2() {
     const char* result = "";
     switch (state) {
-    case ST_STOPPED:
-    case ST_RUNNING:
-    case ST_PAUSED:
-        result = labels[state][1];
-        break;
-    default:
-        break;
+        case ST_STOPPED:
+        case ST_RUNNING:
+        case ST_PAUSED:
+            result = labels[state][1];
+            break;
+        default:
+            break;
     }
     return result;
 }

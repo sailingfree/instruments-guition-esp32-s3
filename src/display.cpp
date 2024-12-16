@@ -34,6 +34,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <TripComputer.h>
 #include <esp32_smartdisplay.h>
 
+extern TripComputer tripComputer;
+
 // Forward declarations
 static lv_obj_t* createEngineScreen(Screens screen);
 static lv_obj_t* createNavScreen(Screens screen);
@@ -55,6 +57,10 @@ static InfoBar* bars[SCR_MAX];
 
 // define text areas
 static lv_obj_t* textAreas[SCR_MAX];
+
+#define HEIGHT_INFO (TFT_HEIGHT / 8)
+#define METER_RADIUS (TFT_WIDTH / 4)
+#define METER_TICK_LENGTH (8)
 
 // Define the positions of elements on the screen.
 // The elements are laid out in a grid with a header and footer
@@ -141,17 +147,20 @@ static void refreshData(Screens scr) {
     }
     s.clear();
 }
-
-// calback for the trip computer
-void trip_timer_cb(lv_timer_t* timer) {
-    tripComputer.updateTime();
-
-    ind[SCR_TRIP][TR_DISTANCE]->setValue(tripComputer.trDistance());
-    ind[SCR_TRIP][TR_TIME]->setValue(tripComputer.trTime());
-    ind[SCR_TRIP][TR_AVGSPEED]->setValue(tripComputer.trAvgSpeed());
-    ind[SCR_TRIP][TR_MAXSPEED]->setValue(tripComputer.trMaxSpeed());
-    ind[SCR_TRIP][TR_AVGWIND]->setValue(tripComputer.trAvgWind());
-    ind[SCR_TRIP][TR_MAXWIND]->setValue(tripComputer.trMaxWind());
+// Update the trip computer]
+void tripUpdate() {
+    static time_t last = 0;
+    time_t now = millis();
+    if (now > last + 1000) {
+        tripComputer.updateTime();
+        ind[SCR_TRIP][TR_DISTANCE]->setValue(tripComputer.trDistance());
+        ind[SCR_TRIP][TR_TIME]->setValue(tripComputer.trTime());
+        ind[SCR_TRIP][TR_AVGSPEED]->setValue(tripComputer.trAvgSpeed());
+        ind[SCR_TRIP][TR_MAXSPEED]->setValue(tripComputer.trMaxSpeed());
+        ind[SCR_TRIP][TR_AVGWIND]->setValue(tripComputer.trAvgWind());
+        ind[SCR_TRIP][TR_MAXWIND]->setValue(tripComputer.trMaxWind());
+        last = now;
+    }
 }
 
 // Constructor. Binds to the parent object.
@@ -205,6 +214,7 @@ InfoBar::InfoBar(lv_obj_t* parent, uint32_t y) {
     static lv_style_t style;
     static lv_style_t value_style;
 
+    update_cb = NULL;
     container = lv_obj_create(parent);
     lv_obj_set_pos(container, 0, y);
     lv_obj_set_width(container, (BAR_WIDTH) - (2 * padding));
@@ -269,12 +279,24 @@ MenuBar::MenuBar(lv_obj_t* parent, uint32_t y) {
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_ROW);
 }
 
+// return true if delay between this and last click is > timeout in msecs
+bool debounceClick(time_t timeout) {
+    static time_t lastTouch = 0;
+    time_t now = millis();
+    bool result = false;
+    if (now > lastTouch + timeout) {
+        result = true;
+        lastTouch = now;
+    }
+    return result;
+}
+
 static void buttonHandler(lv_event_t* e) {
     void* target = lv_event_get_user_data(e);
     Screens s = reinterpret_cast<Screens&>(target);
     lv_event_code_t code = lv_event_get_code(e);
 
-    if (code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED && debounceClick(CLICK_DEBOUNCE)) {
         if (s >= 0 && s < SCR_MAX && screen[s]) {
             refreshData(s);
             lv_scr_load(screen[s]);
@@ -448,13 +470,23 @@ static void setupTripMenu(lv_obj_t* screen) {
     tripComputer.b2 = b2;
 }
 
+static void updateTripHeader(Screens scr) {
+    const char * tripState = tripComputer.getState();
+    String head("Trip ");
+    head += tripState;
+    bars[scr]->setValue(head.c_str());
+}
+
 static lv_obj_t* createTripScreen(Screens scr) {
     lv_obj_t* screen = lv_obj_create(NULL);
     lv_obj_set_width(screen, TFT_WIDTH);
     lv_obj_set_height(screen, TFT_HEIGHT);
     lv_obj_set_align(screen, LV_ALIGN_CENTER);
     setupCommonstyles(screen);
+
     setupHeader(scr, screen, "Trip");
+    bars[scr]->update_cb = updateTripHeader;
+
 
     ind[scr][TR_DISTANCE] = new Indicator(screen, "Distance (nm)", COL1, ROW1);
     ind[scr][TR_TIME] = new Indicator(screen, "Time", COL2, ROW1);
@@ -527,8 +559,8 @@ static lv_obj_t* createEngineScreen(Screens scr) {
 
     /* Major tick properties */
     lv_style_set_line_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_length(&indicator_style, METER_TICK_LENGTH);     /* tick length */
-    lv_style_set_line_width(&indicator_style, 2); /* tick width */
+    lv_style_set_length(&indicator_style, METER_TICK_LENGTH); /* tick length */
+    lv_style_set_line_width(&indicator_style, 2);             /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
     static const char* rpm_ticks[] = {"0", "5", "10", "15", "20", "25", "30", "35"};
@@ -555,7 +587,6 @@ static lv_obj_t* createEngineScreen(Screens scr) {
     lv_obj_set_style_line_width(needle, 5, 0);
     lv_obj_set_style_line_rounded(needle, true, 0);
     lv_obj_set_style_line_color(needle, lv_palette_main(LV_PALETTE_RED), 0);
-
 
     // Label in the dial
     const char* lab = "RPM x100";
@@ -592,7 +623,7 @@ static lv_obj_t* createNavScreen(Screens scr) {
 
     // Create a container for a gauge for the Wind
     lv_obj_t* container = createContainer(screen);
-    lv_obj_set_size(container, (TFT_WIDTH / 2) - 2 * padding, (TFT_HEIGHT / 2) - 2 * padding);
+    lv_obj_set_size(container, (METER_RADIUS * 2) - 2 * padding, (METER_RADIUS * 2) - 2 * padding);
     lv_obj_set_pos(container, COL2, ROW2);
     lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -630,8 +661,8 @@ static lv_obj_t* createNavScreen(Screens scr) {
 
     /* Major tick properties */
     lv_style_set_line_color(&indicator_style, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_length(&indicator_style, METER_TICK_LENGTH);     /* tick length */
-    lv_style_set_line_width(&indicator_style, 2); /* tick width */
+    lv_style_set_length(&indicator_style, METER_TICK_LENGTH); /* tick length */
+    lv_style_set_line_width(&indicator_style, 2);             /* tick width */
     lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
 
     static const char* compass_ticks[] = {
@@ -774,7 +805,6 @@ void setGauge(Screens scr, double value) {
     static const int needleLength = METER_RADIUS - METER_TICK_LENGTH - 24;  // 24 is the font size for the meters
     if (scr >= 0 && scr < SCR_MAX && gauges[scr] && needles[scr]) {
         lv_scale_set_line_needle_value(gauges[scr], needles[scr], needleLength, (int32_t)value);
-//        metersWork();
     }
 }
 
@@ -816,11 +846,14 @@ void loadScreen(Screens scr) {
     }
 }
 
-// Update all the clocks in the headers
+// Update all the clocks and headers
 void updateClocks(const char* t) {
     for (int c = 0; c < SCR_MAX; c++) {
         if (bars[c]) {
             bars[c]->setTime(t);
+            if(bars[c]->update_cb != NULL) {
+                bars[c]->update_cb((Screens)c);
+            }
         }
     }
 }
@@ -840,7 +873,7 @@ void checkAllIndicators() {
             for (int i = 0; i < IND_MAX; i++) {
                 if (ind[scr][i]) {
                     if (now > ind[scr][i]->lastUpdate + IND_VALID_PERIOD) {
-//                        Serial.printf("at %ld clearing %d %d\n", now, scr, i);
+                        //                        Serial.printf("at %ld clearing %d %d\n", now, scr, i);
                         ind[scr][i]->setValue("---");
                     }
                 }

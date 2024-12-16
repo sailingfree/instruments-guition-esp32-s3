@@ -96,6 +96,7 @@ void getN2kMsgs(Stream &s) {
     ulong uptimeSeconds = uptime::getSeconds() + (uptime::getMinutes() * 60) + (uptime::getHours() * 60 * 60) + (uptime::getDays() * 60 * 60 * 24);
     std::map<int, int>::iterator it = N2kMsgMap.begin();
     int total = 0;
+    float totalMsgsPerSec = 0.0;
 
     s.println("======== N2K Messages ====");
     // Fixed width positions - tabs dont work in the display!
@@ -177,6 +178,7 @@ void getN2kMsgs(Stream &s) {
         total += it->second;
         it++;
     }
-    s.printf("Total messages: %d\n", total);
+    totalMsgsPerSec = total / uptimeSeconds / 100.0;
+    s.printf("Total messages: %d %f per sec\n", total, totalMsgsPerSec);
     s.println("=========== END ==========");
 }

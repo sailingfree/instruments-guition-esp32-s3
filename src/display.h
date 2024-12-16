@@ -26,11 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MIN_SNR 35
 #define MAX_SNR 50
 
-#define HEIGH_IND           (TFT_HEIGHT/4)
-#define HEIGHT_INFO         (TFT_HEIGHT/8)
-#define METER_RADIUS        (TFT_WIDTH/4)
-#define METER_TICK_LENGTH   (8)
-
+#define CLICK_DEBOUNCE  800   // Time between clicks in msecs
 
 // Define the screens. This is the ordfer they are in at startup
 typedef enum {
@@ -153,6 +149,8 @@ class InfoBar {
 
     bool isActive;
 
+    void (* update_cb)(Screens scr);
+
     lv_obj_t * container;
     lv_obj_t * text;
     lv_obj_t * curTime;
@@ -203,3 +201,8 @@ void initGNSSSignal(uint32_t);
 // Check all indicators for valid updates
 void checkAllIndicators();
 
+// return true if delay between this and last click is > timeout in msecs
+bool debounceClick(time_t timeout);
+
+// Update the trip display
+void tripUpdate();

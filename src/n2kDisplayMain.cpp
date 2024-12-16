@@ -109,6 +109,9 @@ void loop(void) {
     // Invalidate any indicators that do not have up to date data
     checkAllIndicators();
 
+    // Update the trip computer
+    tripUpdate();
+
     // Update the actual screen if needed.
     metersWork();
 }

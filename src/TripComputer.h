@@ -35,8 +35,8 @@ public:
 
     // Trip computer state machine
     // S0 = stopped b1 = start b2 = reset
-    // S1 = running b1 = stop b2 = pause
-    // S2 = paused  b1 = stop b2 = start
+    // S1 = running b1 = pause b2 = stop
+    // S2 = paused  b1 = resume b2 = stop
 
     // S0->S1 = start
     // S0->S0 = reset
@@ -77,6 +77,8 @@ public:
    // Button label functions depend on the state
     const char * button1();
     const char * button2();
+
+    const char * getState();
 
 private:
     void updateLabels(const char * l1, const char * l2);
