@@ -4,3 +4,5 @@ Uses the lvgl and the esp32-smart display library which takes a lot of hassle ou
 It listens on UDP port 4444 for YD formatted messages, converts them to NMEA2000 objects and displays the results.
 It can log the messages to an SD card for later download and offline processing.
 
+The compression library is from here: https://github.com/richgel999/miniz
+Use the releases to get the two files needed: https://github.com/richgel999/miniz/releases
