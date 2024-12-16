@@ -60,6 +60,9 @@ const char * TripComputer::getState() {
         case ST_RUNNING:
         result = "Running";
         break;
+        case ST_MAX:
+        default:
+        break;
     }
     return result;
 }
