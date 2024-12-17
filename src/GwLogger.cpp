@@ -122,6 +122,10 @@ void createLogFile(char *name, size_t len)
     return;
   }
 
+  if(sd.exists(name)) {
+    sd.remove(name);
+  }
+
   if (!file.open(name, O_WRONLY | O_CREAT | O_APPEND))
   {
     errorPrint("Updating"
@@ -130,7 +134,7 @@ void createLogFile(char *name, size_t len)
     return;
   }
   Serial.printf("Creating a test file of %d bytes ....", len);
-  static const char * testMsg = "test data for a logfile\n";
+  static const char * testMsg = "test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile \n";
   size_t nmsgs = len / strlen(testMsg);
   for(int i = 0; i < nmsgs; i++ )
   {

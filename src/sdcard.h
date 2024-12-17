@@ -27,6 +27,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 extern SdFs sd;
 extern FsFile file;
+extern Stream* Console;
 
 void sdcard_setup(void);
 void sdcard_test();
@@ -36,5 +37,6 @@ void errorPrint(const char * msg = "");
 bool hasSdCard();
 const char * getCardType();
 uint32_t getCapacity();
+void testSd(uint32_t size);
 
 #endif // __SDCARD_H

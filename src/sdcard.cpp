@@ -25,6 +25,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "sdios.h"
 #include <time.h>
 #include <ESP32time.h>
+#include <GwLogger.h>
 
 // ----------------------------
 // SD Reader pins
@@ -154,7 +155,7 @@ void printConfig(SdioConfig config) {
 static ArduinoOutStream cout(Serial);
 
 //------------------------------------------------------------------------------
-void errorPrint(const char * msg = "") {
+void errorPrint(const char * msg) {
   cout << msg << " ";
   if (sd.sdErrorCode()) {
     cout << "SD errorCode: " << hex << showbase;
@@ -322,4 +323,46 @@ esp_err_t formatSD() {
   eraseCard();
   formatCard();
   return 0;
+}
+
+static void readLogFile(char * name) {
+        
+  const int bsize = 4096;
+  char buf[bsize];
+  if(!file.open(name, O_RDONLY)) {
+    Serial.printf("failed to open file %s\n", name);
+  } else {
+    uint32_t count =0;
+    int c;
+    do {
+      c = file.readBytes(buf, bsize);
+      count += c;
+      } while (c);
+    file.close();
+  }
+}
+
+
+void testSd(uint32_t size) {
+  char * name = "testfile";
+  time_t start = millis();
+  time_t end;
+  time_t duration;
+  float rate;
+
+  createLogFile(name, size);
+  end = millis();
+  duration = end - start;
+  rate = size / duration * 1000.0;
+
+  Console->printf("Created %d byte test file in %ld ms - %f bytes/sec\n", size, duration, rate);
+
+  start = millis();
+  readLogFile(name);
+  end = millis();
+  duration = end - start;
+  rate = size / duration * 1000.0;
+
+  Console->printf("Read %d byte test file in %ld ms - %f bytes/sec\n", size, duration, rate);
+
 }

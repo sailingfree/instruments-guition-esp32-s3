@@ -242,6 +242,22 @@ int changeScreen(int argc, char ** argv) {
     return 0;
 }
 
+int sdtest(int argc, char ** argv) {
+    if(argc > 1) {
+        uint32_t size = atoi(argv[1]);
+        if(size <= 0 || size > 10) {
+            Console->printf("Size invalid, Please specify size between 1 and 10 (MBytes)\n");
+            return -1;
+        } else {
+                testSd(1024 * 1024 * size);
+        }
+    } else {
+        Console->printf("Size invalid, Please specify size between 1 and 10 (MBytes)\n");
+            return -1;
+    }
+    return 0;
+}
+
 // Initialise the shell and add the commands
 // The format of the command is HELP_TEXT<space>CMD
 void initGwShell() {
@@ -261,6 +277,7 @@ void initGwShell() {
     shell.addCommand(F("rm \t\tDelete a file"), rmfile);
     shell.addCommand(F("df \t\tDisplays details of the storage"), df);
     shell.addCommand(F("cs \t\tChange screen"), changeScreen);
+    shell.addCommand(F("sdtest \t\tTest SD card write/read. The size is in MBytes"), sdtest);
 }
 
 // Print a prompt to the terminal
