@@ -98,6 +98,8 @@ void loop(void) {
 
     // Read YD messages and update the screens
     wifiWork();
+
+    // handle any web requests
     webServerWork();
 
     // Check we are still connected and reconnect if not
