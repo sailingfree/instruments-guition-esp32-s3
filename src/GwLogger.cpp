@@ -134,7 +134,7 @@ void createLogFile(char *name, size_t len)
     return;
   }
   Serial.printf("Creating a test file of %d bytes ....", len);
-  static const char * testMsg = "test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile test data for a logfile \n";
+  static const char * testMsg = "test data for a logfile\n";
   size_t nmsgs = len / strlen(testMsg);
   for(int i = 0; i < nmsgs; i++ )
   {
