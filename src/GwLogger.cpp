@@ -28,7 +28,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static String logname;
 
 // How many old versions to keep
-static const uint16_t maxlogs = 10;
+static const uint16_t maxlogs = 100;
 
 // The logfile base name
 String logbase = "logfile";
