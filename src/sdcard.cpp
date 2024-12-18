@@ -41,7 +41,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   For example, with the Ethernet shield, set DISABLE_CS_PIN
   to 10 to disable the Ethernet controller.
 */
-const int8_t DISABLE_CS_PIN = ST7701_IO_3WIRE_SPI_LINE_CONFIG_CS_GPIO_NUM;
+const int8_t DISABLE_CS_PIN = -1; // ST7701_IO_3WIRE_SPI_LINE_CONFIG_CS_GPIO_NUM;
 
 /*
   Change the value of SD_CS_PIN if you are using SPI
@@ -70,7 +70,7 @@ SoftSpiDriver<SDFAT_SPI_MISO, SDFAT_SPI_MOSI, SDFAT_SPI_SCK> softSpi;
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(10), &softSpi)
 #else
 // Select the best SD card configuration.
-#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(40))
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SD_SCK_MHZ(40))
 
 #endif
 
@@ -325,30 +325,34 @@ esp_err_t formatSD() {
   return 0;
 }
 
-static void readLogFile(char * name) {
-        
-  const int bsize = 4096;
-  char buf[bsize];
+static size_t readLogFile(char * name) {
+  uint32_t count =0;
+  const int bsize = 8192;
+  char * buf = (char *)malloc(bsize);
   if(!file.open(name, O_RDONLY)) {
     Serial.printf("failed to open file %s\n", name);
   } else {
-    uint32_t count =0;
+  
     int c;
     do {
-      c = file.readBytes(buf, bsize);
+      //c = file.readBytes(buf, bsize);
+      c = file.read(buf, bsize);
       count += c;
       } while (c);
     file.close();
   }
+  free(buf);
+  return count;
 }
 
 
 void testSd(uint32_t size) {
-  char * name = "testfile";
+  char * name = "testfile.txt";
   time_t start = millis();
   time_t end;
   time_t duration;
   float rate;
+  size_t count = 0;
 
   createLogFile(name, size);
   end = millis();
@@ -358,11 +362,11 @@ void testSd(uint32_t size) {
   Console->printf("Created %d byte test file in %ld ms - %f bytes/sec\n", size, duration, rate);
 
   start = millis();
-  readLogFile(name);
+  count = readLogFile(name);
   end = millis();
   duration = end - start;
   rate = size / duration * 1000.0;
 
-  Console->printf("Read %d byte test file in %ld ms - %f bytes/sec\n", size, duration, rate);
+  Console->printf("Read %d byte test file in %ld ms - %f bytes/sec\n", count, duration, rate);
 
 }
