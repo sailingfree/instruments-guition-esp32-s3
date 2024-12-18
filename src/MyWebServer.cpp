@@ -120,8 +120,7 @@ public:
 
     bool handle(WebServer & server, HTTPMethod method, String requestUri) override {
         Serial.printf("URI %s\n", requestUri.c_str());
-        const int bsize = 4096;
-        char buf[bsize];
+        const int bsize = 1024;
         Serial.printf("In handler for %s\n", requestUri.c_str());
         if(!file.open(requestUri.c_str(), O_RDONLY)) {
             server.send(404, "text/html", "No such file");
@@ -133,15 +132,18 @@ public:
             server.sendHeader("Connection", "close");
 
             uint32_t count =0;
+            char * buf = (char *)malloc(bsize);
             int c;
             do {
-                c = file.readBytes(buf, bsize);
+                c = file.read(buf, bsize);
+
                 server.sendContent(buf, c);
                 count += c;
-            } while (c);
+            } while(c);
             file.close();
+            free(buf);
 
-            //   server.send(200);
+            server.send(200);
             return true;
         }
     }
@@ -315,7 +317,7 @@ void webServerSetup(void) {
                 Serial.printf("Opened... %d bytes\n", filesize);
 
                 char* buf;
-                const size_t bsize = 8192U;
+                const size_t bsize = 4096U;
                 buf = (char*)malloc(bsize);
                 if (!buf) {
                     Serial.printf("Cannot allocate %d bytes for download\n", bsize);
@@ -330,9 +332,11 @@ void webServerSetup(void) {
                     uint32_t count =0;
                     int c;
                     do {
-                        c = file.readBytes(buf, bsize);  
-                        //memset(buf,'$', bsize); if(count > 819200) {c = 0;} else {c = bsize;}
-                        server.sendContent(buf, c); 
+                        c = file.read(buf, bsize);  
+                        //memset(buf,'$', bsize); if(count > filesize) {c = 0;} else {c = bsize;}
+                        if(c) {
+                            server.sendContent(buf, c); 
+                        }
                         count += c;
                     } while (c);
                     ulong now = micros();
