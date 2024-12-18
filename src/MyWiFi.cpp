@@ -54,12 +54,12 @@ const IPAddress AP_gateway(192, 168, 15, 1);   // AP is the gateway
 const IPAddress AP_subnet(255, 255, 255, 0);   // /24 subnet
 
 // This application will only ever be a client so predefine this here
-Gw_WiFi_Mode wifiType = WiFi_AP;
+Gw_WiFi_Mode wifiType = WiFi_Client;
 
-String WifiMode = "Unknown";
-String WifiSSID = "Unknown";
-String WifiIP = "Unknown";
-String WifiRSSI = "Unknown";
+String WifiMode =   "Unknown";
+String WifiSSID =   "Unknown";
+String WifiIP =     "Unknown";
+String WifiRSSI =   "Unknown";
 
 // The UDP yacht data reader
 YDtoN2kUDP ydtoN2kUDP;
@@ -113,8 +113,6 @@ bool connectWifi() {
                 WifiRSSI = WiFi.RSSI();
                 Console->printf("Connected to %s\n", wifiCreds[i].ssid.c_str());
                 hadconnection = true;
- //               setilabel(SCR_ENGINE, WifiIP);
- //               setilabel(SCR_NAV, WifiIP);
                 String msg("AP: ");
                 msg += wifiCreds[i].ssid;
                 msg += "\nIP: ";
