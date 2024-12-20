@@ -24,6 +24,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <math.h>
 #include <GwPrefs.h>  // For storing values
 #include <display.h>
+#include <myFonts.h>
 
 extern TripComputer tripComputer;
 
@@ -143,17 +144,34 @@ void TripComputer::tripButton2() {
         TripState newstate;
         switch (state) {
             case ST_STOPPED: {
+                static lv_style_t style;
+
                 newstate = ST_STOPPED;
                 // Do the reset stuff here
                 lv_obj_t* mbox1 = lv_msgbox_create(NULL);
-                lv_obj_t* btn;
+                lv_obj_t* btn1, * btn2;
                 lv_msgbox_add_title(mbox1, "Reset - Confirm");
                 lv_msgbox_add_text(mbox1, "This will erase the current Trip data");
                 lv_msgbox_add_text(mbox1, "Are you sure?");
-                btn = lv_msgbox_add_footer_button(mbox1, "Yes");
-                lv_obj_add_event_cb(btn, event_cb, LV_EVENT_RELEASED, mbox1);
-                btn = lv_msgbox_add_footer_button(mbox1, "Cancel");
-                lv_obj_add_event_cb(btn, event_cb, LV_EVENT_RELEASED, mbox1);
+                btn1 = lv_msgbox_add_footer_button(mbox1, "Yes");
+                lv_obj_add_event_cb(btn1, event_cb, LV_EVENT_RELEASED, mbox1);
+                btn2 = lv_msgbox_add_footer_button(mbox1, "Cancel");
+                lv_obj_add_event_cb(btn2, event_cb, LV_EVENT_RELEASED, mbox1);
+                lv_msgbox_add_close_button(mbox1);
+
+                lv_style_init(&style);
+                lv_obj_t * header = lv_msgbox_get_header(mbox1);                
+                lv_obj_t * footer = lv_msgbox_get_footer(mbox1);
+                
+                lv_style_set_text_color(&style, lv_color_white());
+                lv_style_set_bg_color(&style, lv_palette_main(LV_PALETTE_BLUE));
+                lv_style_set_bg_opa(&style, LV_OPA_100);
+                lv_style_set_text_font(&style, &RobotoCondensedVariableFont_wght32);
+                lv_obj_add_style(header, &style, 0);
+                lv_obj_add_style(btn1, &style, 0);
+                lv_obj_add_style(btn2, &style, 0);
+                
+
             } break;
             case ST_RUNNING:
                 newstate = ST_STOPPED;
