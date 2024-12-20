@@ -6,46 +6,46 @@ Copyright (c)2022-2024 Peter Martin www.naiadhome.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
-Software, and to permit persons to whom the Software is furnished to do so,
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
 subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
-OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <Arduino.h>
 #include <ESP.h>
+#include <GwLogger.h>
 #include <GwPrefs.h>
 #include <GwShell.h>
 #include <SimpleSerialShell.h>
 #include <StringStream.h>
 #include <SysInfo.h>
-#include <sdcard.h>
-#include <GwLogger.h>
 #include <display.h>
 #include <map>
+#include <sdcard.h>
 
 static std::map<int, String> History;
 static const int maxhist = 8;
 // static int curhist;
 
 // Output the ID of the code
-static int showID(int argc = 0, char** argv = NULL) {
+static int showID(int argc = 0, char **argv = NULL) {
     shell.println(F("Running " __FILE__ ",\nBuilt " __DATE__));
     return 0;
 }
 
 // Show some system information
-static int sys(int argc, char** argv) {
+static int sys(int argc, char **argv) {
     StringStream s;
     getSysInfo(s);
     shell.print(s.data);
@@ -53,7 +53,7 @@ static int sys(int argc, char** argv) {
 }
 
 // Networking information
-int net(int argc, char** argv) {
+int net(int argc, char **argv) {
     StringStream s;
     getNetInfo(s);
     shell.print(s.data);
@@ -61,21 +61,21 @@ int net(int argc, char** argv) {
 }
 
 // Storage details
-int storage(int argc, char** argv) {
+int storage(int argc, char **argv) {
     StringStream s;
     dir("/", 2, s);
     shell.print(s.data);
     return 0;
 }
 
-int format(int argc, char ** argv) {
+int format(int argc, char **argv) {
     formatSD();
     return 0;
 }
 
 // get a preference value and display it
-int getval(int argc, char** argv) {
-    char* key;
+int getval(int argc, char **argv) {
+    char *key;
     if (argc != 2) {
         shell.printf("Please supply a register name. Registers are:\n");
         GwListRegs(shell);
@@ -94,12 +94,13 @@ int getval(int argc, char** argv) {
 }
 
 // set a preference value, making validity checks first.
-int setval(int argc, char** argv) {
-    char* key;
-    char* val;
+int setval(int argc, char **argv) {
+    char *key;
+    char *val;
 
     if (argc != 3) {
-        shell.printf("Please supply a register name and new value. Registers are:\n");
+        shell.printf(
+            "Please supply a register name and new value. Registers are:\n");
         GwListRegs(shell);
         return 0;
     }
@@ -115,8 +116,8 @@ int setval(int argc, char** argv) {
     }
     curval = GwSetVal(key, newval);
     if (curval != newval) {
-        shell.printf("Error saving register '%s' as '%s' (%s)\n",
-                     key, val, curval.c_str());
+        shell.printf("Error saving register '%s' as '%s' (%s)\n", key, val,
+                     curval.c_str());
     } else {
         shell.printf("%s -> %s\n", key, curval.c_str());
     }
@@ -124,14 +125,14 @@ int setval(int argc, char** argv) {
 }
 
 // Disconnect the terminal session
-int quit(int argc, char** argv) {
+int quit(int argc, char **argv) {
     disconnect();
     return 0;
 }
 
 // Enable/disable logging all debug messages to the terminal
-static Stream* old;
-int logger(int argc, char** argv) {
+static Stream *old;
+int logger(int argc, char **argv) {
     if (argc != 2) {
         shell.printf("Usage: logger on|off\n");
         return (-1);
@@ -150,13 +151,13 @@ int logger(int argc, char** argv) {
 }
 
 // reboot the ESP32 board.
-int reboot(int argc, char** argv) {
+int reboot(int argc, char **argv) {
     ESP.restart();
-    return 0;  // I dont think we ever get here
+    return 0; // I dont think we ever get here
 }
 
 // Print the messages that have been seen incoming
-int messages(int argc, char** argv) {
+int messages(int argc, char **argv) {
     StringStream s;
     getN2kMsgs(s);
     shell.print(s.data);
@@ -164,9 +165,9 @@ int messages(int argc, char** argv) {
 }
 
 // remove a file
-int rmfile(int argc, char ** argv) {
+int rmfile(int argc, char **argv) {
     String fname;
-    if(argc > 1) {
+    if (argc > 1) {
         fname = argv[1];
     } else {
         errorPrint("Please supply filename\n");
@@ -181,10 +182,10 @@ int rmfile(int argc, char ** argv) {
 }
 
 // cat a file to the output
-int catlog(int argc, char ** argv) {
+int catlog(int argc, char **argv) {
     String logname;
 
-    if(argc > 1) {
+    if (argc > 1) {
         logname = argv[1];
     } else {
         errorPrint("Please supply filename\n");
@@ -199,27 +200,26 @@ int catlog(int argc, char ** argv) {
     char buf[256];
     int c;
     do {
-        c = file.fgets(buf, sizeof(buf) -1);
+        c = file.fgets(buf, sizeof(buf) - 1);
         shell.print(buf);
-    } while(c);
+    } while (c);
     file.close();
     return 0;
 }
 
 // Display details of the storage
 // More then just df!
-int df(int argc, char ** argv) {
+int df(int argc, char **argv) {
     StringStream str;
 
-    if(hasSdCard()) {
+    if (hasSdCard()) {
         shell.printf("SD Card found. Type: %s\n", getCardType());
 
         // capacity in in MB (1000000 bytes)
         uint32_t capacity = getCapacity();
 
         // Convert to GiB and print
-        shell.printf("Sd capacity %d (GB)\n", 
-            capacity /1024);
+        shell.printf("Sd capacity %d (GB)\n", capacity / 1024);
 
         sd.printFatType(&str);
         shell.printf("Filesystem type: %s\n", str.data.c_str());
@@ -235,25 +235,27 @@ int df(int argc, char ** argv) {
     return 0;
 }
 
-int changeScreen(int argc, char ** argv) {
-    if(argc > 1) {
+int changeScreen(int argc, char **argv) {
+    if (argc > 1) {
         loadScreen((Screens)atoi(argv[1]));
     }
     return 0;
 }
 
-int sdtest(int argc, char ** argv) {
-    if(argc > 1) {
+int sdtest(int argc, char **argv) {
+    if (argc > 1) {
         uint32_t size = atoi(argv[1]);
-        if(size <= 0 || size > 10) {
-            Console->printf("Size invalid, Please specify size between 1 and 10 (MBytes)\n");
+        if (size <= 0 || size > 10) {
+            Console->printf("Size invalid, Please specify size between 1 and "
+                            "10 (MBytes)\n");
             return -1;
         } else {
-                testSd(1024 * 1024 * size);
+            testSd(1024 * 1024 * size);
         }
     } else {
-        Console->printf("Size invalid, Please specify size between 1 and 10 (MBytes)\n");
-            return -1;
+        Console->printf(
+            "Size invalid, Please specify size between 1 and 10 (MBytes)\n");
+        return -1;
     }
     return 0;
 }
@@ -265,10 +267,14 @@ void initGwShell() {
     shell.addCommand(F("id \t\tPrint the revision of the system"), showID);
     shell.addCommand(F("sys \t\tPrint the system details"), sys);
     shell.addCommand(F("net \t\tPrint the network details"), net);
-    shell.addCommand(F("getval \tGet the value of a setting (getval NAME)"), getval);
-    shell.addCommand(F("setval \tSet the value of a setting (setval NAME VALUE)"), setval);
-    shell.addCommand(F("quit \t\tExit the shell if connected over a network"), quit);
-    shell.addCommand(F("logger \tSet the output logging. (logger on|off)"), logger);
+    shell.addCommand(F("getval \tGet the value of a setting (getval NAME)"),
+                     getval);
+    shell.addCommand(
+        F("setval \tSet the value of a setting (setval NAME VALUE)"), setval);
+    shell.addCommand(F("quit \t\tExit the shell if connected over a network"),
+                     quit);
+    shell.addCommand(F("logger \tSet the output logging. (logger on|off)"),
+                     logger);
     shell.addCommand(F("reboot \tReboot the ESP"), reboot);
     shell.addCommand(F("msgs \t\tShow the N2K message counts"), messages);
     shell.addCommand(F("dir \t\tList storage"), storage);
@@ -277,15 +283,14 @@ void initGwShell() {
     shell.addCommand(F("rm \t\tDelete a file"), rmfile);
     shell.addCommand(F("df \t\tDisplays details of the storage"), df);
     shell.addCommand(F("cs \t\tChange screen"), changeScreen);
-    shell.addCommand(F("sdtest \t\tTest SD card write/read. The size is in MBytes"), sdtest);
+    shell.addCommand(
+        F("sdtest \t\tTest SD card write/read. The size is in MBytes"), sdtest);
 }
 
 // Print a prompt to the terminal
-void doPrompt() {
-    shell.printf("%s Ok>", hostName.c_str());
-}
+void doPrompt() { shell.printf("%s Ok>", hostName.c_str()); }
 
-void setShellSource(Stream* telnetClient) {
+void setShellSource(Stream *telnetClient) {
     if (telnetClient) {
         shell.attach(*telnetClient);
     } else {

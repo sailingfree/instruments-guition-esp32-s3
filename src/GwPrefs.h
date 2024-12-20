@@ -4,20 +4,20 @@ Copyright (c)2022-2024 Peter Martin www.naiadhome.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
-Software, and to permit persons to whom the Software is furnished to do so,
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
 subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
-OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #pragma once
 
@@ -29,7 +29,7 @@ String GwGetVal(const char *key, String defval = "---");
 void GwListRegs(Stream &s);
 bool isGwKey(String k);
 void GwPrint(Stream &s);
-void addKey(const char * key);
+void addKey(const char *key);
 
 // WiFi mode. Can be AP CL OFF
 #define WIFIMODE "wifi"
@@ -68,9 +68,8 @@ void addKey(const char * key);
 
 // Keys for remembering the trip values
 #define TRIP_DISTANCE "dist"
-#define TRIP_TIME     "time"
-#define TRIP_MAXSP    "maxsp"
-#define TRIP_MAXWIND  "maxwind"
-#define TRIP_AVGSP    "avgsp"
-#define TRIP_AVGWIND  "avgwind"
-
+#define TRIP_TIME "time"
+#define TRIP_MAXSP "maxsp"
+#define TRIP_MAXWIND "maxwind"
+#define TRIP_AVGSP "avgsp"
+#define TRIP_AVGWIND "avgwind"
