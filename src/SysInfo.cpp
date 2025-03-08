@@ -136,6 +136,9 @@ void getN2kMsgs(Stream &s) {
         case 127250:
             name = "Magnetic Heading";
             break;
+        case 127257:
+            name = "Attitude";
+            break;
         case 127489:
             name = "Engine Dynamic";
             break;
