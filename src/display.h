@@ -28,13 +28,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define CLICK_DEBOUNCE 800 // Time between clicks in msecs
 
-// Define the screens. This is the ordfer they are in at startup
+// Define the screens. This is the order they are in at startup
 typedef enum {
     SCR_BOOT,
     SCR_ENGINE,
     SCR_NAV,
     SCR_GNSS,
     SCR_ENV,
+    SCR_HDG,
     SCR_TRIP,
     SCR_NETWORK,
     SCR_SYSINFO,
@@ -60,6 +61,13 @@ typedef enum {
     NAV_DEPTH = 1,
     NAV_COG = 2,
     NAV_WIND = 3,
+
+    // Indexes for the heading screen
+    HDG_PITCH = 0,
+    HDG_ROLL, 
+    HDG_YAW,
+    HDG_COMPASS,
+    HDG_HDG,
 
     // Indexes for the GNSS screen
     GNSS_HDOP = 0,

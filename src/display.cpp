@@ -40,6 +40,7 @@ extern TripComputer tripComputer;
 // Forward declarations
 static lv_obj_t *createEngineScreen(Screens screen);
 static lv_obj_t *createNavScreen(Screens screen);
+static lv_obj_t *createHeadingScreen(Screens screen);
 static lv_obj_t *createGNSSScreen(Screens screen);
 static lv_obj_t *createEnvScreen(Screens screen);
 static lv_obj_t *createInfoScreen(Screens screen, const char *title);
@@ -407,6 +408,7 @@ void metersSetup() {
     // Create the rest of the screens.
     screen[SCR_ENGINE] = createEngineScreen(SCR_ENGINE);
     screen[SCR_NAV] = createNavScreen(SCR_NAV);
+    screen[SCR_HDG] = createHeadingScreen(SCR_HDG);
     screen[SCR_GNSS] = createGNSSScreen(SCR_GNSS);
     screen[SCR_ENV] = createEnvScreen(SCR_ENV);
     screen[SCR_TRIP] = createTripScreen(SCR_TRIP);
@@ -503,6 +505,7 @@ static void setupMenu(lv_obj_t *screen) {
     MenuBar *menuBar = new MenuBar(screen, BAR_ROW_BOTTOM);
     menuBar->addButton("Eng", SCR_ENGINE);
     menuBar->addButton("Nav", SCR_NAV);
+    menuBar->addButton("Hdg", SCR_HDG);
     menuBar->addButton("GPS", SCR_GNSS);
     menuBar->addButton("TRP", SCR_TRIP);
     menuBar->addButton("Env", SCR_ENV);
@@ -694,6 +697,105 @@ static lv_obj_t *createNavScreen(Screens scr) {
 
     // Label in the dial
     const char *lab = "App Wind";
+    lv_obj_t *label = lv_label_create(scale);
+    lv_label_set_text(label, lab);
+
+    lv_obj_set_style_text_font(label, &RobotoCondensedVariableFont_wght24, 0);
+    lv_obj_set_style_text_color(label, lv_palette_main(LV_PALETTE_YELLOW), 0);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    uint32_t w = lv_text_get_width(lab, strlen(lab),
+                                   &RobotoCondensedVariableFont_wght24, 1);
+    lv_obj_set_pos(label, TFT_WIDTH / 4 - (w / 2), TFT_HEIGHT / 3);
+
+    // Save the scale line and image for updates
+    gauges[scr] = scale;
+    needles[scr] = needle;
+
+    setGauge(scr, 0);
+
+    setupMenu(screen);
+
+    return screen;
+}
+
+static lv_obj_t *createHeadingScreen(Screens scr) {
+    lv_obj_t *screen = lv_obj_create(NULL);
+
+    setupCommonstyles(screen);
+    setupHeader(scr, screen, "Heading");
+
+    ind[scr][HDG_PITCH] = new Indicator(screen, "Pitch (deg)", COL1, ROW1);
+    ind[scr][HDG_ROLL] = new Indicator(screen, "Roll (deg)", COL2, ROW1);
+    ind[scr][HDG_YAW]  = new Indicator(screen, "Yaw (deg)", COL1, ROW2);
+    ind[scr][HDG_COMPASS] = new Indicator(screen, "Compass", COL1, ROW3);
+
+    // Create a container for a gauge for the compass
+    lv_obj_t *container = createContainer(screen);
+    lv_obj_set_size(container, (METER_RADIUS * 2) - 2 * padding,
+                    (METER_RADIUS * 2) - 2 * padding);
+    lv_obj_set_pos(container, COL2, ROW2);
+    lv_obj_clear_flag(container, LV_OBJ_FLAG_SCROLLABLE);
+
+    static lv_style_t style;
+    lv_style_init(&style);
+
+    // Scale for the compass
+    lv_obj_t *scale = lv_scale_create(container);
+    lv_obj_set_size(scale, (TFT_WIDTH / 2) - (2 * padding) - (2 * border),
+                    (TFT_HEIGHT / 2) - (2 * padding) - (2 * border));
+    lv_scale_set_mode(scale, LV_SCALE_MODE_ROUND_INNER);
+    lv_obj_set_style_bg_opa(scale, LV_OPA_80, 0);
+    lv_obj_set_style_bg_color(scale, lv_color_black(), 0);
+    lv_obj_set_style_radius(scale, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_clip_corner(scale, true, 0);
+    lv_obj_center(scale);
+
+    lv_scale_set_label_show(scale, true);
+
+    lv_scale_set_total_tick_count(scale, 61);
+    lv_scale_set_major_tick_every(scale, 5);
+
+    lv_obj_set_style_length(scale, 5, LV_PART_ITEMS);
+    lv_obj_set_style_length(scale, 10, LV_PART_INDICATOR);
+
+    lv_scale_set_range(scale, 0, 360);
+    lv_scale_set_angle_range(scale, 360);
+    lv_scale_set_rotation(scale, 270);
+
+    static lv_style_t indicator_style;
+    lv_style_init(&indicator_style);
+
+    /* Label style properties */
+    lv_style_set_text_font(&indicator_style,
+                           &RobotoCondensedVariableFont_wght24);
+    lv_style_set_text_color(&indicator_style,
+                            lv_palette_main(LV_PALETTE_YELLOW));
+
+    /* Major tick properties */
+    lv_style_set_line_color(&indicator_style,
+                            lv_palette_main(LV_PALETTE_YELLOW));
+    lv_style_set_length(&indicator_style, METER_TICK_LENGTH); /* tick length */
+    lv_style_set_line_width(&indicator_style, 2);             /* tick width */
+    lv_obj_add_style(scale, &indicator_style, LV_PART_INDICATOR);
+
+    static const char *compass_ticks[] = {"",    "30",  "60",  "90",  "120",
+                                          "150", "180", "210", "240", "270",
+                                          "300", "330", "360"};
+    lv_scale_set_text_src(scale, compass_ticks);
+
+    static lv_style_t scale_style;
+    lv_style_init(&scale_style);
+    lv_style_set_line_width(&scale_style, 6);
+
+    lv_obj_add_style(scale, &scale_style, LV_PART_ANY);
+    lv_obj_t *needle = lv_line_create(scale);
+
+    lv_obj_set_style_line_width(needle, 5, 0);
+    lv_obj_set_style_line_rounded(needle, true, 0);
+    lv_obj_set_style_line_color(needle, lv_palette_main(LV_PALETTE_RED), 0);
+
+    // Label in the dial
+    const char *lab = "Heading °";
     lv_obj_t *label = lv_label_create(scale);
     lv_label_set_text(label, lab);
 

@@ -80,6 +80,38 @@ void handlePGN(tN2kMsg &msg) {
     bool hadData = true; // We negate this in the default case below
 
     switch (msg.PGN) {
+
+    case 127250: {
+        // Magnetic heading
+        unsigned char instance = 0xff;
+        double heading = 0.0;
+        double deviation = 0.0;
+        double variation = 0.0;
+        tN2kHeadingReference ref;
+
+        bool s = ParseN2kPGN127250(msg, instance, heading, deviation, variation, ref);
+        if(s) {
+            setGauge(SCR_HDG, RadToDeg(heading));
+ //           Serial.printf("Heading %f\n", RadToDeg(heading));
+            setMeter(SCR_HDG, HDG_COMPASS, RadToDeg(heading), "°", 0);
+        }
+    }
+    break;
+
+    case 127257: {
+        // Attitude
+        unsigned char instance = 0xff;
+        double yaw = 0.0;
+        double pitch = 0.0;
+        double roll = 0.0;
+        bool s = ParseN2kPGN127257(msg, instance, yaw, pitch, roll);
+        if(s) {
+            setMeter(SCR_HDG, HDG_PITCH, RadToDeg(pitch),"°", 0);
+            setMeter(SCR_HDG, HDG_ROLL, RadToDeg(roll), "°", 0);
+            setMeter(SCR_HDG, HDG_YAW, RadToDeg(yaw), "°", 0);
+        }
+    } break;
+
     case 127508: {
         // Battery Status
         unsigned char instance = 0xff;
