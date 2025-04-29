@@ -178,9 +178,8 @@ void wifiSetup(String &hostName) {
         Serial.println("Failed to connect to WiFi please check creds");
         displayText("Can't connect to wifi please check creds");
     } else {
-        Serial.println("WiFi connected..!");
-        Serial.print("Got IP: ");
-        Serial.println(WiFi.localIP());
+        hostName =WiFi.getHostname();
+        Serial.printf("WiFi connected..!, Hostname %s IP %s\n", hostName.c_str(), WiFi.localIP().toString().c_str());
 
         if (MDNS.begin(hostName.c_str())) {
             Console->print("* MDNS responder started. Hostname -> ");
