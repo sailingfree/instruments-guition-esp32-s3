@@ -1,15 +1,25 @@
 #include <Arduino.h>
 #include <SimpleSerialShell.h>
 
-// Class for the command history
-class History {
-    public: 
-        History();
-        void reset();
-        int count();
-        
-};
+// History
+History history;
 
+History::History() {}
+
+int History::add(int argc, char ** argv) {
+    Serial.printf("History. Adding %s with %d args\n", argv[0], argc);
+    for(int i = 1; i < argc; i++) {
+        Serial.printf("...Arg %d %s\n", i, argv[i]);
+    }
+    return 0;
+}
+
+
+HistoryItem::HistoryItem() {}
+
+HistoryItem::HistoryItem(int argc, char ** argv) {
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /*!
@@ -87,8 +97,6 @@ SimpleSerialShell::SimpleSerialShell()
     : shellConnection(NULL), m_lastErrNo(EXIT_SUCCESS), tokenizer(strtok_r) {
     resetBuffer();
 
-    historyPos = 0;
-
     // simple help.
     addCommand(F("help"), SimpleSerialShell::printHelp);
 
@@ -158,12 +166,15 @@ bool SimpleSerialShell::prepInput(void) {
                     break;
                 case 0x42:
                     // Down
+                    Serial.printf("DOWN");
                     break;
                 case 0x43:
+                Serial.printf("RIGHT");
                     // Right
                     break;
                 case 0x44:
                     // Left
+                    Serial.printf("LEFT");
                     break;
                 default:
 
@@ -293,6 +304,8 @@ int SimpleSerialShell::execute(int argc, char **argv) {
     for (Command *aCmd = firstCommand; aCmd != NULL; aCmd = aCmd->next) {
         if (aCmd->compareName(argv[0]) == 0) {
             m_lastErrNo = aCmd->execute(argc, argv);
+            // Add to history
+            history.add(argc, argv);
             resetBuffer();
             return m_lastErrNo;
         }

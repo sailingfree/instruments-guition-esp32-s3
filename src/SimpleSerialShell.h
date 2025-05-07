@@ -7,6 +7,37 @@
 #define SIMPLE_SERIAL_SHELL_HISTORY_SIZE 32
 #endif
 
+#define MAX_HIST 20
+#define MAX_ARGS 4
+
+// class for history item
+class HistoryItem {
+    public:
+        // deafult
+        HistoryItem();
+
+        // With values
+        HistoryItem(int argc, char ** argv);
+
+
+        int argc;
+        String argv[MAX_ARGS];
+        int number;
+};
+
+// Class for the command history
+class History {
+    public: 
+        History();
+        void reset();
+        int count();
+        int add(int argc, char ** argv);
+        
+    private:
+        HistoryItem entries[MAX_HIST];
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /*!
  *  @file SimpleSerialShell.h

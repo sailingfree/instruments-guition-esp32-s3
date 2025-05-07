@@ -86,7 +86,6 @@ void TripComputer::tripButton1() {
             newstate = ST_STOPPED;
             break;
         }
-        Serial.printf("B1 state %d new state %d\n", state, newstate);
         state = newstate;
         updateLabels(labels[newstate][0], labels[newstate][1]);
     }
@@ -148,7 +147,6 @@ void TripComputer::tripButton2() {
 
             lv_style_init(&style);
             lv_obj_t *header = lv_msgbox_get_header(mbox1);
-            lv_obj_t *footer = lv_msgbox_get_footer(mbox1);
 
             lv_style_set_text_color(&style, lv_color_white());
             lv_style_set_bg_color(&style, lv_palette_main(LV_PALETTE_BLUE));
@@ -169,7 +167,6 @@ void TripComputer::tripButton2() {
             newstate = ST_STOPPED;
             break;
         }
-        Serial.printf("B1 state %d new state %d\n", state, newstate);
         state = newstate;
         updateLabels(labels[newstate][0], labels[newstate][1]);
     }
