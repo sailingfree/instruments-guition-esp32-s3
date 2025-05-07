@@ -157,8 +157,8 @@ void listHeaders() {
 
 // Web server
 void webServerSetup(void) {
-    server.begin(80);
     if (WiFi.status() == WL_CONNECTED) {
+        server.begin(80);
         Serial.println("Web server started");
         displayText("Web Server started");
 
