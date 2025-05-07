@@ -119,7 +119,6 @@ static void event_cb(lv_event_t *e) {
         lv_obj_t *label = lv_obj_get_child(btn, 0);
         lv_obj_t *mbox = (lv_obj_t *)lv_event_get_user_data(e);
         LV_UNUSED(label);
-        Serial.printf("Button %s clicked", lv_label_get_text(label));
         if (strcmp(lv_label_get_text(label), "Yes") == 0) {
             tripComputer.resetTrip();
         }
