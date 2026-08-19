@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <Arduino.h>
-#include <ESP.h>
+#include <Esp.h>
 #include <GwLogger.h>
 #include <GwPrefs.h>
 #include <GwShell.h>
@@ -33,6 +33,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <display.h>
 #include <map>
 #include <sdcard.h>
+#include <taskstats.h>
 
 static std::map<int, String> History;
 static const int maxhist = 8;
@@ -260,6 +261,14 @@ int sdtest(int argc, char **argv) {
     return 0;
 }
 
+// Get the task stats
+int TaskLog(int argc, char ** argv) {
+    StringStream s;
+    getTaskStats(s);
+    shell.print(s.data);
+    return 0;
+}
+
 // Initialise the shell and add the commands
 // The format of the command is HELP_TEXT<space>CMD
 void initGwShell() {
@@ -285,6 +294,7 @@ void initGwShell() {
     shell.addCommand(F("cs \t\tChange screen"), changeScreen);
     shell.addCommand(
         F("sdtest \t\tTest SD card write/read. The size is in MBytes"), sdtest);
+    shell.addCommand(F("ps \t\tShow task stats"), TaskLog);
 }
 
 // Print a prompt to the terminal
