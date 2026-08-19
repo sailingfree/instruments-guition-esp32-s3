@@ -33,7 +33,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <GwLogger.h>
-#include <YDtoN2KUDP.h>
+#include <YDtoN2kUDP.h>
 
 // Constructor
 YDtoN2kUDP::YDtoN2kUDP() {}
