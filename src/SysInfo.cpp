@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <Arduino.h>
-#include <ESP.h>
+#include <Esp.h>
 #include <GwPrefs.h>
 #include <NMEA0183Messages.h>
 #include <SysInfo.h>
