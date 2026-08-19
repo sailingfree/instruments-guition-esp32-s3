@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "sdios.h"
 #include <Arduino.h>
-#include <ESP32time.h>
+#include <ESP32Time.h>
 #include <GwLogger.h>
 #include <SPI.h>
 #include <SdFat.h>
