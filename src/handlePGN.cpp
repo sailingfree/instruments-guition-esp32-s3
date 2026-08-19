@@ -258,13 +258,20 @@ void handlePGN(tN2kMsg &msg) {
             snprintf(buf, 12, "%02d:%02d:%02d", hours, minutes, seconds);
 
             String latStr(Latitude, 5);
-            String lonStr(Longitude, 5);
-            String sats(nSatellites);
-            setMeter(SCR_GNSS, GNSS_HDOP, Hdop, "");
-            setMeter(SCR_GNSS, GNSS_SATS, sats);
             setMeter(SCR_GNSS, GNSS_LAT_DEGS, decimalDegDMM(Latitude));
+            
+            String lonStr(Longitude, 5);
             setMeter(SCR_GNSS, GNSS_LON_DEGS, decimalDegDMM(Longitude));
             tripComputer.updatePosition(Latitude, Longitude);
+
+            if(nSatellites != N2kUInt8NA) {
+                String sats(nSatellites);
+                setMeter(SCR_GNSS, GNSS_SATS, sats);
+            }
+
+            if(Hdop != N2kDoubleNA) {
+                setMeter(SCR_GNSS, GNSS_HDOP, Hdop, "");
+            }
 
             record["lat"] = Latitude;
             record["lon"] = Longitude;
