@@ -406,7 +406,9 @@ void metersSetup() {
     // Create the boot screen for bootup messages
     screen[SCR_BOOT] = createInfoScreen(SCR_BOOT, "Boot Messages");
     // Create the rest of the screens.
+ 
     screen[SCR_ENGINE] = createEngineScreen(SCR_ENGINE);
+   
     screen[SCR_NAV] = createNavScreen(SCR_NAV);
     screen[SCR_HDG] = createHeadingScreen(SCR_HDG);
     screen[SCR_GNSS] = createGNSSScreen(SCR_GNSS);
@@ -898,10 +900,15 @@ static lv_obj_t *createClockScreen(Screens scr) {
 }
 
 // Update the meters. Called regularly from the main loop/task
+ulong next_millis;
+auto lv_last_tick = millis();
 void metersWork(void) {
+//    Serial.printf("Ticker...\n");
+    // Update the ticker
     static const uint32_t tick_delay = 100;
     lv_task_handler(); /* let the GUI do its work */
     lv_tick_inc(tick_delay);
+//    Serial.printf("Out of ticker...\n");
 }
 
 // Set the value of a meter using a double and precision of 2
@@ -913,7 +920,7 @@ void setMeter(Screens scr, MeterIdx idx, double value, const char *units) {
 // Uses the indicator's method which smooths the values
 void setMeter(Screens scr, MeterIdx idx, double value, const char *units,
               uint32_t prec) {
-    if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
+    if (scr >= 0 && scr < SCR_MAX && screen[scr] && ind[scr][idx]) {
         ind[scr][idx]->setValue(value, units, prec);
     }
 }
@@ -954,11 +961,17 @@ void setilabel(Screens scr, String &str) {
 }
 
 // Load the first screen
-void loadScreen() { lv_scr_load(screen[SCR_ENGINE]); }
+void loadScreen()
+{
+    if (screen[SCR_ENGINE])
+    {
+        lv_scr_load(screen[SCR_ENGINE]);
+    }
+}
 
 // Load a numbered screen
 void loadScreen(Screens scr) {
-    if (scr >= 0 && scr < SCR_MAX) {
+    if (scr >= 0 && scr < SCR_MAX && screen[scr]) {
         lv_scr_load(screen[scr]);
     }
 }
