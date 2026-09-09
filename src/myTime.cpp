@@ -36,8 +36,12 @@ Dates for GMT clock change
 
 static const uint16_t max_gmt_dates = 6;
 BSTDates bstDates[max_gmt_dates] = {
-    {2024, 3, 31, 10, 27}, {2025, 3, 30, 10, 26}, {2026, 3, 29, 10, 25},
-    {2027, 3, 28, 10, 31}, {2028, 3, 26, 10, 29}, {2029, 3, 25, 10, 28}};
+    {2024, 3, 31, 10, 27}, 
+    {2025, 3, 30, 10, 26}, 
+    {2026, 3, 29, 10, 25},
+    {2027, 3, 28, 10, 31}, 
+    {2028, 3, 26, 10, 29}, 
+    {2029, 3, 25, 10, 28}};
 
 // Given a date returns the hour adjusted to BST if required.
 int utcToGmt(int hour, int year, int month, int day) {
@@ -54,9 +58,11 @@ int utcToGmt(int hour, int year, int month, int day) {
                 (month == bstDates[y].end_month &&
                  day <= bstDates[y].end_day)) {
                 result += 1;
+                break;
             } else if (month > bstDates[y].start_month &&
                        month < bstDates[y].end_month) {
                 result += 1;
+                break;
             }
         }
     }

@@ -58,12 +58,6 @@ void updateTime() {
         // Convert system time to its parts
         gmtime_r(&now_secs, &tm);
 
-        // Work out any daylight saving offset
-        uint32_t hourAdjust = 0;
-        if (isBST()) {
-            hourAdjust = 1;
-        }
-
         /* the scale will store the minute hand line points in `minute_hand_points` */
         lv_scale_set_line_needle_value(scale, minute_hand, size / 2, tm.tm_min);
 
@@ -72,7 +66,7 @@ void updateTime() {
         Add 1 to the month as the tm struct month starts at 0 for january
         Also adjust for BST
         */
-        int hour = utcToGmt(tm.tm_hour, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday) + hourAdjust;
+        int hour = utcToGmt(tm.tm_hour, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
 
         // The hour needs to be converted to 60/ths and minutes added
         uint32_t newHour = ((hour % 12) * 5) + (tm.tm_min / 12);

@@ -36,6 +36,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <SysInfo.h>
 #include <sdcard.h>
 
+#include "lwip/apps/sntp.h"
+
 // Map for received n2k messages. Logs the PGN and the count
 std::map<int, int> N2kMsgMap;
 
@@ -75,6 +77,11 @@ WiFiClient telnetClient;
 // Connect to a wifi AP
 // Try all the configured APs
 static bool hadconnection = false;
+
+// NTP variables
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 0;
+const int   daylightOffset_sec = 0;
 
 bool connectWifi() {
     int wifi_retry = 0;
@@ -202,6 +209,16 @@ void wifiSetup(String &hostName) {
 
         // Start the OTA service
         initializeOTA(Console);
+
+        // Get ntp time if available and setup local time
+        //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+//        esp_netif_init();
+    if(sntp_enabled()){
+        sntp_stop();
+    }
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, ntpServer);
+    sntp_init();
     }
 }
 
