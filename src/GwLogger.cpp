@@ -53,14 +53,6 @@ void rotateLogs() {
         f2 = logbase + (i - 1) + logsuffix;
         if (sd.exists(f2)) {
             sd.rename(f2, f1);
-            Serial.printf("Renaming"
-                          " "
-                          "%s"
-                          " "
-                          "to"
-                          "%s"
-                          "\n",
-                          f2.c_str(), f1.c_str());
         }
     }
     // rename the old log with 1st sequence

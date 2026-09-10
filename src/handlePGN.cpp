@@ -283,13 +283,13 @@ void handlePGN(tN2kMsg &msg) {
                 (DaysSince1970 * SECONDS_IN_DAY) + SecondsSinceMidnight;
             // now = 365 * 10 * SECONDS_IN_DAY;
             // now += 26 * SECONDS_IN_DAY;
+
             struct tm tm;
             gmtime_r(&now, &tm);
             // Update the system time every minute to keep local time in sync
             if (!hasSetTime || tm.tm_sec == 0) {
                 rtc.setTime(tm.tm_sec, tm.tm_min, tm.tm_hour, tm.tm_mday,
                             tm.tm_mon + 1, tm.tm_year + 1900);
-                hasSetTime = true;
             }
         }
     } break;

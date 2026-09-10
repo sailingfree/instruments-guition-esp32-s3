@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <SPI.h>
 #include <SdFat.h>
 #include <time.h>
+#include <myTime.h>
 
 // ----------------------------
 // SD Reader pins
@@ -83,6 +84,9 @@ FsFile file;
 static bool hasSD = false;
 
 bool hasSdCard() { return hasSD; }
+
+// Time object for setting the latest write time
+ESP32Time rtc;
 
 //------------------------------------------------------------------------------
 
@@ -163,13 +167,18 @@ void errorPrint(const char *msg) {
 
 // Call back for file timestamps.  Only called for file create and sync().
 void dateTime(uint16_t *date, uint16_t *t, uint8_t *ms10) {
-    ESP32Time rtc;
+    uint8_t bstAdjust = 0;
+
+    if(isBST()) {
+        bstAdjust = 1;
+    }
 
     // Return date using FS_DATE macro to format fields.
-    *date = FS_DATE(rtc.getYear(), rtc.getMonth(), rtc.getDay());
+    // The month is 0-11 so add one
+    *date = FS_DATE(rtc.getYear(), rtc.getMonth() + 1, rtc.getDay());
 
     // Return time using FS_TIME macro to format fields in 24 hour format
-    *t = FS_TIME(rtc.getHour(true), rtc.getMinute(), rtc.getSecond());
+    *t = FS_TIME(rtc.getHour(true) + bstAdjust, rtc.getMinute(), rtc.getSecond());
 
     // Return low time bits in units of 10 ms.
     *ms10 = 0;
