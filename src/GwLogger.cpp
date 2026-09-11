@@ -67,14 +67,13 @@ void setup_logging(void) {
         return;
     }
 
-    // create a file and write one line to the file
+    // create a file
     if (!file.open(logname.c_str(), O_WRONLY | O_CREAT | O_TRUNC)) {
         errorPrint("Creating"
                    " "
                    "logfile");
         return;
     }
-    file.println(logname);
     file.close();
 }
 
