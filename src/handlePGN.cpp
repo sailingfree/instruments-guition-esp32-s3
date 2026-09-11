@@ -41,11 +41,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <myTime.h>
 
+#include <N2kDataToNMEA0183.h>
+
 // Trip computer
 #include <TripComputer.h>
 extern TripComputer tripComputer;
 
 static ESP32Time rtc;
+
+tN2kDataToNMEA0183 n2kToNMEA0183(NULL, NULL);
+
+void callBack(const tNMEA0183Msg &msg) {
+    static const size_t bufSize = 256;
+    char buf[bufSize];
+    msg.GetMessage(buf, bufSize);
+//    Serial.printf("CB Got MSG %s\n", buf);
+    append_log(buf);
+}
+
+
+// Init the handler
+void setupHandlePgn(void) {
+    n2kToNMEA0183.SetSendNMEA0183MessageCallback(callBack);
+}
 
 // Function to return a String object formatted to a fixed number of decimal
 // places
@@ -383,7 +401,11 @@ void handlePGN(tN2kMsg &msg) {
     if (hadData && size > 0) {
         String buffer;
         serializeJson(doc, buffer);
-        append_log(buffer.c_str());
+     //   append_log(buffer.c_str());
         String now = rtc.getTime("%A, %B %d %Y %H:%M:%S");
     }
+
+    // Convert to NMEA0183
+    n2kToNMEA0183.HandleMsg(msg);
+
 }

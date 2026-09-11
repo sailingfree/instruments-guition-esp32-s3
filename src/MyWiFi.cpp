@@ -220,6 +220,7 @@ void wifiSetup(String &hostName) {
     sntp_setservername(0, ntpServer);
     sntp_init();
     }
+    setupHandlePgn();
 }
 
 // Read the YD data, decode the N2K messages

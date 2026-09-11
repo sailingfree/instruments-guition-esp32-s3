@@ -31,6 +31,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Input/Output stream
 extern Stream *Console;
 
+// Init the handler
+void setupHandlePgn(void);
+
 // Main message handler
 void handlePGN(tN2kMsg &msg);
 
