@@ -30,3 +30,5 @@ void read_log(Stream &s);
 String &getLogname();
 // Create a file for testing
 void createLogFile(char *name, size_t len);
+void rotateLogs();
+void renameFile(char *, char *);

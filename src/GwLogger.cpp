@@ -59,6 +59,11 @@ void rotateLogs() {
     sd.rename(logbase + logsuffix, logbase + 1 + logsuffix);
 }
 
+void renameFile(char * from, char * to) {
+    sd.rename(from, to);
+}
+
+
 void setup_logging(void) {
     rotateLogs();
     logname = logbase + logsuffix;

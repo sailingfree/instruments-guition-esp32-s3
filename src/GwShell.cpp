@@ -34,6 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 #include <sdcard.h>
 #include <taskstats.h>
+#include <GwLogger.h>
 
 static std::map<int, String> History;
 static const int maxhist = 8;
@@ -269,6 +270,26 @@ int TaskLog(int argc, char ** argv) {
     return 0;
 }
 
+// rotate the logs
+int logRotate(int argc, char ** argv) {
+    rotateLogs();
+    return 0;
+}
+
+int rename(int argc, char ** argv) {
+    char * from;
+    char * to;
+    if(argc != 3) {
+        Console->printf("syntax: mv from to\n");
+        return -1;
+    }
+    from= argv[1];
+    to = argv[2];
+    renameFile(from, to);
+    return 0;
+}
+
+
 // Initialise the shell and add the commands
 // The format of the command is HELP_TEXT<space>CMD
 void initGwShell() {
@@ -295,6 +316,8 @@ void initGwShell() {
     shell.addCommand(
         F("sdtest \t\tTest SD card write/read. The size is in MBytes"), sdtest);
     shell.addCommand(F("ps \t\tShow task stats"), TaskLog);
+    shell.addCommand(F("rotate \t\tRotate logs"), logRotate);
+    shell.addCommand(F("mv \t\tRename a file"), rename);
 }
 
 // Print a prompt to the terminal
