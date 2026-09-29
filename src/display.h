@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <NMEA2000.h>
 #include <lvgl.h>
+#include <string>
 
 // Define the expected min and max values for the GNSS SNR
 #define MIN_SNR 35
@@ -99,7 +100,7 @@ typedef struct {
     uint32_t x;
     uint32_t y;
     char type;
-    String label;
+    std::string label;
     bool doneLabel;
     uint32_t oldx;
     uint32_t oldw;
@@ -177,10 +178,10 @@ void metersWork();
 void setMeter(Screens scr, MeterIdx ind, double, const char *,
               uint32_t prec = 2);
 void setMeter(Screens scr, MeterIdx ind, const char *);
-void setMeter(Screens scr, MeterIdx ind, String &val);
+void setMeter(Screens scr, MeterIdx ind, std::string &val);
 void setGauge(Screens scr, double);
-void setVlabel(Screens, String &);
-void setilabel(Screens scr, String &);
+void setVlabel(Screens, std::string &);
+void setilabel(Screens scr, std::string &);
 void loadScreen();
 void loadScreen(Screens scr);
 void displayText(const char *);

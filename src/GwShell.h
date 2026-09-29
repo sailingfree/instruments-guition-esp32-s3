@@ -24,9 +24,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <Arduino.h>
 
 #include <map>
+#include <string>
 
-extern String WifiMode, WifiIP, WifiSSID;
-extern String hostName, macAddress;
+extern std::string WifiMode, WifiIP, WifiSSID;
+extern std::string hostName, macAddress;
 
 void initGwShell();
 void setShellSource(Stream *stream);

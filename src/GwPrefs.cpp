@@ -25,9 +25,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <Preferences.h>
 
 #include <vector>
+#include <string>
 
 // Holds the list of configurable registers in the preference object
-static std::vector<String> Reg;
+static std::vector<std::string> Reg;
 
 static Preferences shellPref;
 static const char *prefname = "settings";
@@ -59,22 +60,22 @@ void GwPrefsInit() {
 void GwPrint(Stream &s) {
     static const int tablen = 16; // Tab from left margin
     s.printf("Preferences\n");
-    for (String str : Reg) {
+    for (std::string str : Reg) {
         int keylen = str.length();
         s.printf("%s", str.c_str());
         for (int i = 0; i < tablen - keylen; i++) {
             s.printf(" ");
         }
-        String val = GwGetVal(str.c_str(), "---");
+        std::string val = GwGetVal(str.c_str(), "---");
         s.printf("%s\n", val.c_str());
     }
 }
 
 // Check to see if the register is in the list
-bool isGwKey(String key) {
+bool isGwKey(std::string key) {
     //    GwPrefsInit();
     bool isreg = false;
-    for (String str : Reg) {
+    for (std::string str : Reg) {
         if (key == str) {
             isreg = true;
         }
@@ -85,15 +86,15 @@ bool isGwKey(String key) {
 // List the allowable registers
 void GwListRegs(Stream &s) {
     //    GwPrefsInit();
-    for (String str : Reg) {
+    for (std::string str : Reg) {
         s.printf("      %s\n", str.c_str());
     }
 }
 
-String GwGetVal(const char *key, String defval) {
+std::string GwGetVal(const char *key, std::string defval) {
     // GwPrefsInit();
     shellPref.begin(prefname, false);
-    String val = shellPref.getString(key);
+    std::string val = shellPref.getString(key).c_str();
     shellPref.end();
     // Serial.printf("GWGETVAL %s '%s'\n", key, val.c_str());
     if (val == "") {
@@ -102,12 +103,12 @@ String GwGetVal(const char *key, String defval) {
     return val;
 }
 
-String GwSetVal(const char *key, String newval) {
+std::string GwSetVal(const char *key, std::string newval) {
     // GwPrefsInit();
-    String curval;
+    std::string curval;
     shellPref.begin(prefname, false);
-    shellPref.putString(key, newval);
-    curval = shellPref.getString(key);
+    shellPref.putString(key, newval.c_str());
+    curval = shellPref.getString(key).c_str();
     shellPref.end();
     return curval;
 }

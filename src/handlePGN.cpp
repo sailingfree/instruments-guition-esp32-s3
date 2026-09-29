@@ -30,6 +30,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <NMEA2000.h>
 #include <StringStream.h>
 #include <handlePGN.h>
+#include <string>
 
 // Display handlers
 #include <display.h>
@@ -67,8 +68,8 @@ void setupHandlePgn(void) {
 
 // Function to return a String object formatted to a fixed number of decimal
 // places
-String dpf(double val, int dp = 2) {
-    String result(val, 2);
+std::string dpf(double val, int dp = 2) {
+    std::string result(val, 2);
     return result;
 }
 
@@ -172,7 +173,7 @@ void handlePGN(tN2kMsg &msg) {
         if (s && speed != N2kDoubleNA) {
             setGauge(SCR_ENGINE, speed);
             setMeter(SCR_ENGINE, ENG_RPM, speed, "rpm");
-            String es(speed, 0);
+            std::string es(speed, 0);
             es += "rpm";
             setVlabel(SCR_ENGINE, es);
             record["rpm"] = (int)speed;
@@ -186,7 +187,7 @@ void handlePGN(tN2kMsg &msg) {
         unsigned char instance;
         tN2kWindReference ref;
         bool s = ParseN2kPGN130306(msg, instance, windSpeed, windAngle, ref);
-        String ws(msToKnots(windSpeed));
+        std::string ws(std::to_string(msToKnots(windSpeed)));
         ws += "kts";
         setVlabel(SCR_NAV, ws);
         if (s && windAngle != N2kDoubleNA) {
@@ -275,15 +276,15 @@ void handlePGN(tN2kMsg &msg) {
             char buf[10];
             snprintf(buf, 12, "%02d:%02d:%02d", hours, minutes, seconds);
 
-            String latStr(Latitude, 5);
+            std::string latStr(Latitude, 5);
             setMeter(SCR_GNSS, GNSS_LAT_DEGS, decimalDegDMM(Latitude));
             
-            String lonStr(Longitude, 5);
+            std::string lonStr(Longitude, 5);
             setMeter(SCR_GNSS, GNSS_LON_DEGS, decimalDegDMM(Longitude));
             tripComputer.updatePosition(Latitude, Longitude);
 
             if(nSatellites != N2kUInt8NA) {
-                String sats(nSatellites);
+                std::string sats(std::to_string(nSatellites));
                 setMeter(SCR_GNSS, GNSS_SATS, sats);
             }
 
@@ -399,10 +400,10 @@ void handlePGN(tN2kMsg &msg) {
     // If we had some data then log it
     size_t size = record.size();
     if (hadData && size > 0) {
-        String buffer;
+        std::string buffer;
         serializeJson(doc, buffer);
      //   append_log(buffer.c_str());
-        String now = rtc.getTime("%A, %B %d %Y %H:%M:%S");
+        std::string now = rtc.getTime("%A, %B %d %Y %H:%M:%S").c_str();
     }
 
     // Convert to NMEA0183

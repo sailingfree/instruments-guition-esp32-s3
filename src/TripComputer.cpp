@@ -37,12 +37,12 @@ TripComputer::TripComputer() { state = ST_STOPPED; }
 // At startup read any existing values and use them
 // Must be called after prefs have been initialised
 void TripComputer::init() {
-    distance = GwGetVal(TRIP_DISTANCE).toInt();
-    startTime = GwGetVal(TRIP_TIME).toInt();
-    maxSpeed = GwGetVal(TRIP_MAXSP).toInt();
-    maxWind = GwGetVal(TRIP_MAXWIND).toInt();
-    avgSpeed = GwGetVal(TRIP_AVGSP).toInt();
-    avgWind = GwGetVal(TRIP_AVGWIND).toInt();
+    distance = std::stol(GwGetVal(TRIP_DISTANCE));
+    startTime = std::stol(GwGetVal(TRIP_TIME));
+    maxSpeed = std::stol(GwGetVal(TRIP_MAXSP));
+    maxWind = std::stol(GwGetVal(TRIP_MAXWIND));
+    avgSpeed = std::stol(GwGetVal(TRIP_AVGSP));
+    avgWind = std::stol(GwGetVal(TRIP_AVGWIND));
 }
 
 const char *TripComputer::getState() {
@@ -104,12 +104,12 @@ void TripComputer::resetTrip() {
 
     sumSpeed = sumWind = 0.0;
 
-    GwSetVal(TRIP_DISTANCE, String(distance));
-    GwSetVal(TRIP_TIME, String(startTime));
-    GwSetVal(TRIP_MAXSP, String(maxSpeed));
-    GwSetVal(TRIP_MAXWIND, String(maxWind));
-    GwSetVal(TRIP_AVGSP, String(avgSpeed));
-    GwSetVal(TRIP_AVGWIND, String(avgWind));
+    GwSetVal(TRIP_DISTANCE, std::to_string(distance));
+    GwSetVal(TRIP_TIME, std::to_string(startTime));
+    GwSetVal(TRIP_MAXSP, std::to_string(maxSpeed));
+    GwSetVal(TRIP_MAXWIND, std::to_string(maxWind));
+    GwSetVal(TRIP_AVGSP, std::to_string(avgSpeed));
+    GwSetVal(TRIP_AVGWIND, std::to_string(avgWind));
 }
 
 static void event_cb(lv_event_t *e) {
@@ -183,7 +183,7 @@ void TripComputer::updateTime() {
     if (now > lastTimer + 1000) {
         ttime = startTime + ((lastTimer - timer) / 1000);
         lastTimer = now;
-        GwSetVal(TRIP_TIME, String(ttime));
+        GwSetVal(TRIP_TIME, std::to_string(ttime));
     }
 }
 
@@ -196,7 +196,7 @@ void TripComputer::updatePosition(double lat, double lon) {
         // This is going to be inaccurate due to nose etc
         double d = distance_between(lastLat, lastLon, lat, lon);
         distance += d;
-        GwSetVal(TRIP_DISTANCE, String(distance));
+        GwSetVal(TRIP_DISTANCE, std::to_string(distance));
     }
     lastLat = lat;
     lastLon = lon;
@@ -210,10 +210,10 @@ void TripComputer::updateWind(double s) {
     sumWind += s;
     samplesWind++;
     avgWind = sumWind / samplesWind;
-    GwSetVal(TRIP_AVGWIND, String(avgWind));
+    GwSetVal(TRIP_AVGWIND, std::to_string(avgWind));
     if (s > maxWind) {
         maxWind = (uint32_t)s;
-        GwSetVal(TRIP_MAXWIND, String(maxWind));
+        GwSetVal(TRIP_MAXWIND, std::to_string(maxWind));
     }
 }
 
@@ -225,10 +225,10 @@ void TripComputer::updateSpeed(double s) {
     sumSpeed += s;
     samplesSpeed++;
     avgSpeed = sumSpeed / samplesSpeed;
-    GwSetVal(TRIP_AVGSP, String(avgSpeed));
+    GwSetVal(TRIP_AVGSP, std::to_string(avgSpeed));
     if (s > maxSpeed) {
         maxSpeed = (uint32_t)s;
-        GwSetVal(TRIP_MAXSP, String(maxSpeed));
+        GwSetVal(TRIP_MAXSP, std::to_string(maxSpeed));
     }
 }
 

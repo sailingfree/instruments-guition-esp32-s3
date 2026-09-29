@@ -23,12 +23,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <Arduino.h>
 #include <sdcard.h>
+#include <string>
 
 void setup_logging(void);
 void append_log(const char *msg);
 void read_log(Stream &s);
-String &getLogname();
+std::string &getLogname();
 // Create a file for testing
-void createLogFile(char *name, size_t len);
+void createLogFile(const char *name, size_t len);
 void rotateLogs();
-void renameFile(char *, char *);
+void renameFile(const char *, const char *);

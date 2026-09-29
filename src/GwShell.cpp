@@ -35,8 +35,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sdcard.h>
 #include <taskstats.h>
 #include <GwLogger.h>
+#include <string>
 
-static std::map<int, String> History;
+static std::map<int, std::string> History;
 static const int maxhist = 8;
 // static int curhist;
 
@@ -84,13 +85,13 @@ int getval(int argc, char **argv) {
         return 0;
     }
     key = argv[1];
-    if (!isGwKey(String(key))) {
+    if (!isGwKey(std::string(key))) {
         shell.printf("%s is not a valid register. Registers are:\n", key);
         GwListRegs(shell);
         return 0;
     }
 
-    String val = GwGetVal(key);
+    std::string val = GwGetVal(key);
     shell.printf("%s -> %s\n", key, val.c_str());
     return 0;
 }
@@ -108,10 +109,10 @@ int setval(int argc, char **argv) {
     }
     key = argv[1];
     val = argv[2];
-    String newval(argv[2]);
-    String curval("");
+    std::string newval(argv[2]);
+    std::string curval("");
 
-    if (!isGwKey(String(key))) {
+    if (!isGwKey(std::string(key))) {
         shell.printf("%s is not a valid register. Registers are:\n", key);
         GwListRegs(shell);
         return 0;
@@ -168,7 +169,7 @@ int messages(int argc, char **argv) {
 
 // remove a file
 int rmfile(int argc, char **argv) {
-    String fname;
+    std::string fname;
     if (argc > 1) {
         fname = argv[1];
     } else {
@@ -185,7 +186,7 @@ int rmfile(int argc, char **argv) {
 
 // cat a file to the output
 int catlog(int argc, char **argv) {
-    String logname;
+    std::string logname;
 
     if (argc > 1) {
         logname = argv[1];

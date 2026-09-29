@@ -23,11 +23,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <Arduino.h>
 
+#include <string>
+
 void GwPrefsInit();
-String GwSetVal(const char *key, String val);
-String GwGetVal(const char *key, String defval = "---");
+std::string GwSetVal(const char *key, std::string val);
+std::string GwGetVal(const char *key, std::string defval = "---");
 void GwListRegs(Stream &s);
-bool isGwKey(String k);
+bool isGwKey(std::string k);
 void GwPrint(Stream &s);
 void addKey(const char *key);
 

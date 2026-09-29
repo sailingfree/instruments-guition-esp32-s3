@@ -34,6 +34,7 @@ SOFTWARE.
 #include <myFonts.h>
 #include <myTime.h>
 #include <sdcard.h>
+#include <string>
 
 extern TripComputer tripComputer;
 
@@ -205,7 +206,7 @@ void Indicator::setFont(const lv_font_t *value) {
 
 // set the value using a double and precision.
 void Indicator::setValue(double value, const char *units, uint32_t prec) {
-    String v(value, prec);
+    std::string v(value, prec);
     v += units;
     setValue(v.c_str());
     lastUpdate = millis();
@@ -474,7 +475,7 @@ static void setupTripMenu(lv_obj_t *screen) {
 
 static void updateTripHeader(Screens scr) {
     const char *tripState = tripComputer.getState();
-    String head("Trip ");
+    std::string head("Trip ");
     head += tripState;
     bars[scr]->setValue(head.c_str());
 }
@@ -935,7 +936,7 @@ void setGauge(Screens scr, double value) {
 }
 
 // Set the value of a meter using a string
-void setMeter(Screens scr, MeterIdx idx, String &string) {
+void setMeter(Screens scr, MeterIdx idx, std::string &string) {
     if (scr >= 0 && scr < SCR_MAX && ind[scr][idx]) {
         ind[scr][idx]->setValue(string.c_str());
     }
@@ -948,13 +949,13 @@ void setMeter(Screens scr, MeterIdx idx, const char *str) {
     }
 }
 
-void setVlabel(Screens scr, String &str) {
+void setVlabel(Screens scr, std::string &str) {
     if (scr >= 0 && scr < SCR_MAX && vals[scr]) {
         lv_label_set_text(vals[scr], str.c_str());
     }
 }
 
-void setilabel(Screens scr, String &str) {
+void setilabel(Screens scr, std::string &str) {
     if (scr >= 0 && scr < SCR_MAX && infos[scr]) {
         lv_label_set_text(infos[scr], str.c_str());
     }

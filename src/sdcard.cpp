@@ -326,7 +326,7 @@ esp_err_t formatSD() {
     return 0;
 }
 
-static size_t readLogFile(char *name) {
+static size_t readLogFile(const char *name) {
     uint32_t count = 0;
     const int bsize = 8192;
     char *buf = (char *)malloc(bsize);
@@ -347,7 +347,7 @@ static size_t readLogFile(char *name) {
 }
 
 void testSd(uint32_t size) {
-    char *name = "testfile.txt";
+    const char *name = "testfile.txt";
     time_t start = millis();
     time_t end;
     time_t duration;

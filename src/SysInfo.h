@@ -25,10 +25,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <Arduino.h>
 
 #include <map>
+#include <string>
 
-extern String WifiMode, WifiIP, WifiSSID, WifiRSSI;
-extern String hostName, macAddress;
-extern String Model;
+extern std::string WifiMode, WifiIP, WifiSSID, WifiRSSI;
+extern std::string hostName, macAddress;
+extern std::string Model;
 
 void getNetInfo(Stream &s);
 void getSysInfo(Stream &s);

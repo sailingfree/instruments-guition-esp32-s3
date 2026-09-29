@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "functional": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/pete/Nextcloud/PlatformIO/Projects/instruments-guition-esp32-s3/src"
 }

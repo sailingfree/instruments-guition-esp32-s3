@@ -27,11 +27,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <GwShell.h>
 #include <GwTelnet.h>
 #include <MyWiFi.h>
+#include <string>
 
 // Global objects and variables
-String hostName;
-String Model = "Naiad Display 1";
-String macAddress; // Make the mac address gloabal
+std::string hostName;
+std::string Model = "Naiad Display 1";
+std::string macAddress; // Make the mac address gloabal
 
 // Setup the shell and other admin
 void adminSetup(void) {
@@ -50,7 +51,7 @@ void adminSetup(void) {
             macAddress += ":";
         }
         id += (chipid[i] << (7 * i));
-        macAddress += String(chipid[i], HEX);
+        macAddress += std::string(chipid[i], HEX);
     }
 
     // Initialise the preferences

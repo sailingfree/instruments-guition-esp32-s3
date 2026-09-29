@@ -22,14 +22,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <WiFi.h>
+#include <string>
 
 // Wifi mode
 typedef enum { WiFi_off, WiFi_AP, WiFi_Client } Gw_WiFi_Mode;
 
 // Map for the wifi access points names and credentials
 typedef struct {
-    String ssid;
-    String pass;
+    std::string ssid;
+    std::string pass;
 } WiFiCreds;
 
 extern Stream *Console;
@@ -37,7 +38,7 @@ extern Stream *Console;
 // External declarations
 
 // Initialise the wifi network
-void wifiSetup(String &hostName);
+void wifiSetup(std::string &hostName);
 
 // Check its still connected and re-connect if not
 void wifiCheck(void);

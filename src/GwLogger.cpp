@@ -23,43 +23,47 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <Arduino.h>
 #include <GwLogger.h>
+#include <string>
 
 // Logfile name for the current operations
-static String logname;
+static std::string logname;
 
 // How many old versions to keep
 static const uint16_t maxlogs = 10;
 
 // The logfile base name
-String logbase = "logfile";
+std::string logbase = "logfile";
 
 // The suffix. .txt works when reading on windows PCs
-String logsuffix = ".txt";
+std::string logsuffix = ".txt";
 
 // Rotae the logs, losing the oldest and renaming the remaing files
 // so the oldest has the highest number
 void rotateLogs() {
-    String f1, f2;
+    std::string f1, f2;
 
     // remove the oldest file
-    f1 = logbase + maxlogs + logsuffix;
-    if (sd.exists(f1)) {
-        sd.remove(f1);
+    f1 = logbase + std::to_string(maxlogs) + logsuffix;
+    if (sd.exists(f1.c_str())) {
+        sd.remove(f1.c_str());
     }
 
     // rename the old logs moving them to their next highest number
     for (uint16_t i = maxlogs; i > 1; i--) {
-        f1 = logbase + i + logsuffix;
-        f2 = logbase + (i - 1) + logsuffix;
-        if (sd.exists(f2)) {
-            sd.rename(f2, f1);
+        f1 = logbase + std::to_string(i) + logsuffix;
+        f2 = logbase + std::to_string((i - 1)) + logsuffix;
+        if (sd.exists(f2.c_str())) {
+            sd.rename(f2.c_str(), f1.c_str());
         }
     }
     // rename the old log with 1st sequence
-    sd.rename(logbase + logsuffix, logbase + 1 + logsuffix);
+    std::string old, newn;
+    old = logbase + logsuffix;
+    newn = logbase + std::to_string(1) + logsuffix;
+    sd.rename(old.c_str(), newn.c_str());
 }
 
-void renameFile(char * from, char * to) {
+void renameFile(const char * from, const char * to) {
     sd.rename(from, to);
 }
 
@@ -99,7 +103,7 @@ void append_log(const char *msg) {
     file.sync();
 }
 
-void read_log(String &log, Stream &s) {
+void read_log(std::string &log, Stream &s) {
     if (!hasSdCard()) {
         return;
     }
@@ -111,18 +115,18 @@ void read_log(String &log, Stream &s) {
         return;
     }
 
-    String str;
+    std::string str;
     do {
-        str = file.readString();
-        s.print(str);
+        str = file.readString().c_str();
+        s.print(str.c_str());
     } while (str.length());
     file.close();
 }
 
-String &getLogname() { return logname; }
+std::string &getLogname() { return logname; }
 
 // Create a file for testing
-void createLogFile(char *name, size_t len) {
+void createLogFile(const char *name, size_t len) {
     if (!hasSdCard()) {
         return;
     }

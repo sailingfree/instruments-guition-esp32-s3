@@ -31,6 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <handlePGN.h>
 
 #include <map>
+#include <string>
 
 #include <SdFat.h>
 #include <SysInfo.h>
@@ -46,8 +47,8 @@ static const uint16_t MaxAP = 2;
 WiFiCreds wifiCreds[MaxAP];
 
 // Wifi cofiguration Client and Access Point
-String AP_password; // AP password  read from preferences
-String AP_ssid;     // SSID for the AP constructed from the hostname
+std::string AP_password; // AP password  read from preferences
+std::string AP_ssid;     // SSID for the AP constructed from the hostname
 
 // IP network address when working in AP mode
 const IPAddress AP_local_ip(192, 168, 15, 1); // Static address for AP
@@ -57,10 +58,10 @@ const IPAddress AP_subnet(255, 255, 255, 0);  // /24 subnet
 // This application will only ever be a client so predefine this here
 Gw_WiFi_Mode wifiType = WiFi_Client;
 
-String WifiMode = "Unknown";
-String WifiSSID = "Unknown";
-String WifiIP = "Unknown";
-String WifiRSSI = "Unknown";
+std::string WifiMode = "Unknown";
+std::string WifiSSID = "Unknown";
+std::string WifiIP = "Unknown";
+std::string WifiRSSI = "Unknown";
 
 // The UDP yacht data reader
 YDtoN2kUDP ydtoN2kUDP;
@@ -116,11 +117,11 @@ bool connectWifi() {
             if (WiFi.status() == WL_CONNECTED) {
                 WifiMode = "Client";
                 WifiSSID = wifiCreds[i].ssid;
-                WifiIP = WiFi.localIP().toString();
+                WifiIP = WiFi.localIP();
                 WifiRSSI = WiFi.RSSI();
                 Console->printf("Connected to %s\n", wifiCreds[i].ssid.c_str());
                 hadconnection = true;
-                String msg("AP: ");
+                std::string msg("AP: ");
                 msg += wifiCreds[i].ssid;
                 msg += "\nIP: ";
                 msg += WifiIP;
@@ -160,16 +161,14 @@ void wifiCheck() {
 // WiFi setup.
 // Connect to a wifi AP which supplies the data we need.
 // Register services we use
-void wifiSetup(String &hostName) {
+void wifiSetup(std::string &hostName) {
     Serial.println("Starting WiFi manager task...");
     displayText("Starting WiFi...");
 
     uint32_t retries = 5;
 
-    // Get the configured wifi type
-    String wifi_mode_string =
-        GwGetVal(WIFIMODE, "0"); // 0 = off, 1 = ap, 2 = client
-    wifiType = (Gw_WiFi_Mode)wifi_mode_string.toInt();
+    // Will only ever be a client
+    wifiType = WiFi_Client;
 
     // setup the WiFI map from the preferences
     wifiCreds[0].ssid = GwGetVal(SSID1);
@@ -190,7 +189,7 @@ void wifiSetup(String &hostName) {
 
         if (MDNS.begin(hostName.c_str())) {
             Console->print("* MDNS responder started. Hostname -> ");
-            Console->println(hostName);
+            Console->println(hostName.c_str());
         } else {
             Console->printf("Failed to start the MDNS respondern");
         }
