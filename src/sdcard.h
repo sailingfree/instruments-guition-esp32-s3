@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef __SDCARD_H
 #define __SDCARD_H
 
+#ifdef USE_SD_FAT
 #include <SdFat.h>
 
 extern SdFs sd;
@@ -38,5 +39,7 @@ bool hasSdCard();
 const char *getCardType();
 uint32_t getCapacity();
 void testSd(uint32_t size);
+
+#endif // USE_SD_FAT
 
 #endif // __SDCARD_H

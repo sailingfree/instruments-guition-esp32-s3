@@ -84,7 +84,9 @@ void setup() {
     webServerSetup(); // remote management
     displayText("Web server started...");
     displayText("Initialising SD card");
+#ifdef USE_SD_FAT
     sdcard_setup();
+#endif
     displayText("Starting logging");
     setup_logging();
     //    createLogFile("testlog.txt", 1024 * 1024 * 10);

@@ -117,6 +117,7 @@ class uriHandler : public RequestHandler {
         Serial.printf("URI %s\n", requestUri.c_str());
         const int bsize = 1024;
         Serial.printf("In handler for %s\n", requestUri.c_str());
+#ifdef USE_SD_FAT
         if (!file.open(requestUri.c_str(), O_RDONLY)) {
             server.send(404, "text/html", "No such file");
             return false;
@@ -141,6 +142,8 @@ class uriHandler : public RequestHandler {
             server.send(200);
             return true;
         }
+#endif
+        return true;
     }
 };
 
@@ -198,9 +201,11 @@ void webServerSetup(void) {
                     Serial.printf("Body: %s\n", body.c_str());
                     Serial.printf("Filename %s\n", filename.c_str());
                     server.send(200, "text/plain", "");
+#ifdef USE_SD_FAT
                     file.open(filename.c_str(), O_CREAT | O_WRITE | O_TRUNC);
                     file.write(body.c_str(), body.length());
                     file.close();
+#endif
                 }
             },
             handleFileUpload);
@@ -225,10 +230,12 @@ void webServerSetup(void) {
                             footer_html);
         });
 
+#ifdef USE_SD_FAT
         // Handle listing the sd card
         server.on("/dir", HTTP_GET, []() {
             listHeaders();
             // Read the directory into a string
+
             StringStream stream;
             String filelist;
             sd.ls(&stream, "/", 0);
@@ -273,7 +280,9 @@ void webServerSetup(void) {
                         style + head_html + "<h1>Files</h1>" + "<table>" +
                             filelist + "</table>" + nav + footer_html);
         });
+#endif
 
+#ifdef USE_SD_FAT
         // Handle downloading a logfile
         server.on("/download", HTTP_GET, []() {
             listHeaders();
@@ -337,6 +346,7 @@ void webServerSetup(void) {
 
             server.sendHeader("Connection", "close");
         });
+#endif
 
         delay(10);
         server.begin();

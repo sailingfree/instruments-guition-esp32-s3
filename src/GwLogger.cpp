@@ -40,6 +40,7 @@ std::string logsuffix = ".txt";
 // Rotae the logs, losing the oldest and renaming the remaing files
 // so the oldest has the highest number
 void rotateLogs() {
+#ifdef USE_SD_FAT
     std::string f1, f2;
 
     // remove the oldest file
@@ -61,14 +62,18 @@ void rotateLogs() {
     old = logbase + logsuffix;
     newn = logbase + std::to_string(1) + logsuffix;
     sd.rename(old.c_str(), newn.c_str());
+#endif
 }
 
 void renameFile(const char * from, const char * to) {
+#ifdef USE_SD_FAT
     sd.rename(from, to);
+#endif
 }
 
 
 void setup_logging(void) {
+#ifdef USE_SD_FAT
     rotateLogs();
     logname = logbase + logsuffix;
 
@@ -84,9 +89,11 @@ void setup_logging(void) {
         return;
     }
     file.close();
+#endif
 }
 
 void append_log(const char *msg) {
+#ifdef USE_SD_FAT
     if (!hasSdCard()) {
         return;
     }
@@ -101,9 +108,11 @@ void append_log(const char *msg) {
     file.println(msg);
     file.close();
     file.sync();
+#endif
 }
 
 void read_log(std::string &log, Stream &s) {
+#ifdef USE_SDT_FAT
     if (!hasSdCard()) {
         return;
     }
@@ -121,12 +130,14 @@ void read_log(std::string &log, Stream &s) {
         s.print(str.c_str());
     } while (str.length());
     file.close();
+#endif
 }
 
 std::string &getLogname() { return logname; }
 
 // Create a file for testing
 void createLogFile(const char *name, size_t len) {
+#ifdef USE_SD_FAT
     if (!hasSdCard()) {
         return;
     }
@@ -150,4 +161,5 @@ void createLogFile(const char *name, size_t len) {
     file.close();
     file.sync();
     Serial.printf("Finished\n");
+#endif
 }

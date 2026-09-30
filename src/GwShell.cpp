@@ -65,14 +65,18 @@ int net(int argc, char **argv) {
 
 // Storage details
 int storage(int argc, char **argv) {
+#ifdef USE_SD_FAT
     StringStream s;
     dir("/", 2, s);
     shell.print(s.data);
+#endif
     return 0;
 }
 
 int format(int argc, char **argv) {
+#ifdef USE_SD_FAT
     formatSD();
+#endif
     return 0;
 }
 
@@ -169,6 +173,7 @@ int messages(int argc, char **argv) {
 
 // remove a file
 int rmfile(int argc, char **argv) {
+#ifdef USE_SD_FAT
     std::string fname;
     if (argc > 1) {
         fname = argv[1];
@@ -181,11 +186,13 @@ int rmfile(int argc, char **argv) {
         errorPrint("Error deleteing file\n");
         return 0;
     }
+#endif
     return 0;
 }
 
 // cat a file to the output
 int catlog(int argc, char **argv) {
+#ifdef USE_SD_FAT
     std::string logname;
 
     if (argc > 1) {
@@ -207,12 +214,14 @@ int catlog(int argc, char **argv) {
         shell.print(buf);
     } while (c);
     file.close();
+#endif
     return 0;
 }
 
 // Display details of the storage
 // More then just df!
 int df(int argc, char **argv) {
+#ifdef USE_SD_FAT
     StringStream str;
 
     if (hasSdCard()) {
@@ -235,6 +244,7 @@ int df(int argc, char **argv) {
     } else {
         shell.printf("No storage device found\n");
     }
+#endif
     return 0;
 }
 
@@ -246,6 +256,7 @@ int changeScreen(int argc, char **argv) {
 }
 
 int sdtest(int argc, char **argv) {
+#ifdef USE_SD_FAT
     if (argc > 1) {
         uint32_t size = atoi(argv[1]);
         if (size <= 0 || size > 10) {
@@ -260,6 +271,7 @@ int sdtest(int argc, char **argv) {
             "Size invalid, Please specify size between 1 and 10 (MBytes)\n");
         return -1;
     }
+#endif
     return 0;
 }
 

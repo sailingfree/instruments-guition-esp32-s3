@@ -19,6 +19,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifdef USE_SD_FAT
+
 #include "sdios.h"
 #include <Arduino.h>
 #include <ESP32Time.h>
@@ -371,3 +373,5 @@ void testSd(uint32_t size) {
     Console->printf("Read %d byte test file in %ld ms - %f bytes/sec\n", count,
                     duration, rate);
 }
+
+#endif // USE_SD_FAT

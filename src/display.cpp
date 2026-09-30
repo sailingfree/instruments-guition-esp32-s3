@@ -118,6 +118,7 @@ static void refreshData(Screens scr) {
 
     case SCR_SDCARD:
         s.clear();
+#ifdef USE_SD_FAT
 
         if (hasSdCard()) {
             s.printf("SD Card found. Type: %s\n", getCardType());
@@ -144,6 +145,7 @@ static void refreshData(Screens scr) {
         }
         dir("/", 2, s);
         lv_textarea_set_text(textAreas[SCR_SDCARD], s.data.c_str());
+#endif
         break;
     default:
         break;
