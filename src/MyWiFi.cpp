@@ -33,7 +33,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 #include <string>
 
-#include <SdFat.h>
 #include <SysInfo.h>
 #include <sdcard.h>
 

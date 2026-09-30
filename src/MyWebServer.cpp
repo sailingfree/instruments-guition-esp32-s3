@@ -20,7 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <Arduino.h>
-#include <SdFat.h>
 #include <StringStream.h>
 #include <SysInfo.h>
 #include <WebServer.h>
