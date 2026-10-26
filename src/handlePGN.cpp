@@ -273,13 +273,14 @@ void handlePGN(tN2kMsg &msg) {
             t = (t - seconds) / 60;
             minutes = t % 60;
             hours = (t - minutes) / 60;
-            char buf[10];
-            snprintf(buf, 12, "%02d:%02d:%02d", hours, minutes, seconds);
+            static const int len = 13;
+            char buf[len];
+            snprintf(buf, len - 1, "%02d:%02d:%02d", hours, minutes, seconds);
 
-            std::string latStr(Latitude, 5);
+            std::string latStr(std::to_string(Latitude));
             setMeter(SCR_GNSS, GNSS_LAT_DEGS, decimalDegDMM(Latitude));
             
-            std::string lonStr(Longitude, 5);
+            std::string lonStr(std::to_string(Longitude));
             setMeter(SCR_GNSS, GNSS_LON_DEGS, decimalDegDMM(Longitude));
             tripComputer.updatePosition(Latitude, Longitude);
 

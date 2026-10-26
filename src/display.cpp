@@ -208,7 +208,10 @@ void Indicator::setFont(const lv_font_t *value) {
 
 // set the value using a double and precision.
 void Indicator::setValue(double value, const char *units, uint32_t prec) {
-    std::string v(value, prec);
+    static const uint32_t blen = 32;
+    char buf[blen];
+    snprintf(buf, blen - 1, "%.*f%s", prec, value, units);
+    std::string v(buf);
     v += units;
     setValue(v.c_str());
     lastUpdate = millis();
@@ -924,6 +927,7 @@ void setMeter(Screens scr, MeterIdx idx, double value, const char *units) {
 void setMeter(Screens scr, MeterIdx idx, double value, const char *units,
               uint32_t prec) {
     if (scr >= 0 && scr < SCR_MAX && screen[scr] && ind[scr][idx]) {
+        Serial.printf("SCR %d IDX %d val %f units %s prec %d\n", scr, idx, value, units, prec);
         ind[scr][idx]->setValue(value, units, prec);
     }
 }
